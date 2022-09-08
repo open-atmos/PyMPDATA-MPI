@@ -20,9 +20,10 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v4
         with:
           python-version: '3.10'
+          cache: 'pip'
       - name: Linting
         run: |
           pip install pre-commit
@@ -35,9 +36,10 @@ jobs:
       - uses: actions/checkout@v2
         with:
           persist-credentials: false
-      - uses: actions/setup-python@v2
+      - uses: actions/setup-python@v4
         with:
           python-version: '3.10'
+          cache: 'pip'
       - uses: mpi4py/setup-mpi@v1
       - name: Build
         run: |
@@ -59,9 +61,10 @@ jobs:
       - uses: actions/checkout@v2
       - uses: mpi4py/setup-mpi@v1
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: '3.10'
+          cache: 'pip'
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
@@ -80,9 +83,10 @@ jobs:
     runs-on: ${{ matrix.platform }}
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-python@v1
+      - uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
+          cache: 'pip'
       - uses: mpi4py/setup-mpi@v1
       - run: pip install -e .
       - run: python -We -c "import PySuperDropletLES"
@@ -96,26 +100,22 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0  # https://github.com/pypa/setuptools_scm/issues/480
-      - uses: actions/setup-python@v2
+      - uses: actions/setup-python@v4
         with:
           python-version: "3.10"
-
+          cache: 'pip'
       - run: pip install twine build
-
       - run: |
           unset CI
           python -m build 2>&1 | tee build.log
           exit `fgrep -i warning build.log | wc -l`
       - run: twine check --strict dist/*
-
       - if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: pypa/gh-action-pypi-publish@unstable/v1
         with:
           password: ${{ secrets.TEST_PYPI_API_TOKEN }}
           repository_url: https://test.pypi.org/legacy/
-
       - if: startsWith(github.ref, 'refs/tags')
         uses: pypa/gh-action-pypi-publish@unstable/v1
         with:
           password: ${{ secrets.PYPI_API_TOKEN }}
-
