@@ -1,4 +1,4 @@
-# pylint: disable=missing-module-docstring,missing-function-docstring
+# pylint: disable=missing-module-docstring,missing-function-docstring, c-extension-no-member
 from pathlib import Path
 
 import h5py
@@ -12,10 +12,10 @@ def test_hdf5(tmp_path):
 
     path = Path(tmp_path) / "parallel_test.hdf5"
 
-    f = h5py.File(path, "w", driver="mpio", comm=MPI.COMM_WORLD)
+    file = h5py.File(path, "w", driver="mpio", comm=MPI.COMM_WORLD)
 
-    dset = f.create_dataset("test", (numba_mpi.size(),), dtype="i")
+    dset = file.create_dataset("test", (numba_mpi.size(),), dtype="i")
 
     dset[rank] = rank
 
-    f.close()
+    file.close()
