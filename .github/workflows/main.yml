@@ -84,6 +84,12 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - uses: mpi4py/setup-mpi@v1
+      - if: startsWith(matrix.platform, 'ubuntu-')
+        run: apt-get install python3-h5py-mpi
+      - if: startsWith(matrix.platform, 'mac-')
+        run: |
+             brew install hdf5-mpi 
+             HDF5_MPI="ON" CC=mpicc HDF5_DIR=/opt/homebrew pip install --no-binary=h5py h5py
       - run: pip install -e .
       - run: python -We -c "import PySuperDropletLES"
       - run: pip install pytest
