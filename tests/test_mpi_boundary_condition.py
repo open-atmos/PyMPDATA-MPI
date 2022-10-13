@@ -21,7 +21,7 @@ class TestMPIBoundaryCondition:
             ),
         ),
     )
-    @pytest.mark.parametrize("C", (1.0, -1.0))
+    @pytest.mark.parametrize("courant", (1.0, -1.0))
     @pytest.mark.parametrize("n_steps", (1,))
     @pytest.mark.parametrize("psi", ([1.0, 1.0, 2.0, 1.0, 1.0],))
     def test_1d_periodic_single_node_hardcoded(bcs, courant, n_steps, psi):
