@@ -1,4 +1,5 @@
-# pylint: disable=missing-module-docstring,missing-function-docstring, c-extension-no-member
+# pylint: disable=missing-module-docstring,missing-function-docstring
+
 from pathlib import Path
 
 import h5py

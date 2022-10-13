@@ -23,6 +23,7 @@ dependencies = [
     "numba_mpi>=0.14",
     "PySDM",
     "PyMPDATA",
+    "mpi4py",
     "h5py"
 ]
 dynamic = ["version"]
