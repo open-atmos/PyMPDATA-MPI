@@ -1,3 +1,4 @@
+# pylint: disable=missing-module-docstring,missing-function-docstring, missing-class-docstring
 from functools import lru_cache
 
 import numba
@@ -25,7 +26,6 @@ class MPIBoundaryCondition:
 def _make_scalar(ats, jit_flags):
     @numba.njit(**jit_flags)
     def fill_halos(psi, span, sign):
-        # TODO
         data = np.empty(1)
         data[0] = ats(*psi, sign * span)
         status = numba_mpi.send(data, 0, 0)
@@ -42,8 +42,8 @@ def _make_scalar(ats, jit_flags):
 def _make_vector(ats, jit_flags):
     @numba.njit(**jit_flags)
     def fill_halos(psi, span, sign):
-        # TODO
         data = np.empty(1)
+        print(psi, span, sign, ats)
         # data[0] = ats(*psi, sign * span)
         # status = numba_mpi.send(data, 0, sign * span)
         # print("status send: ", status)

@@ -43,4 +43,3 @@ def test_domain3d(n_sd=44, grid=(5, 6, 7), size=(50, 60, 70)):
 
     # assert
     assert len(particulator.mesh.grid) == 3
-    # TODO !

@@ -1,3 +1,4 @@
+# pylint: disable=missing-module-docstring,missing-function-docstring, missing-class-docstring
 import numba_mpi
 import numpy as np
 import pytest
@@ -23,7 +24,7 @@ class TestMPIBoundaryCondition:
     @pytest.mark.parametrize("C", (1.0, -1.0))
     @pytest.mark.parametrize("n_steps", (1,))
     @pytest.mark.parametrize("psi", ([1.0, 1.0, 2.0, 1.0, 1.0],))
-    def test_1d_periodic_single_node_hardcoded(bcs, C, n_steps, psi):
+    def test_1d_periodic_single_node_hardcoded(bcs, courant, n_steps, psi):
         """checks if we can emulate `Periodic` boundary condition behaviour on one node
         in one dimension with `MPIBoundaryCondition`"""
 
@@ -33,7 +34,7 @@ class TestMPIBoundaryCondition:
         halo = options.n_halo
         advectee = ScalarField(np.array(psi), halo=halo, boundary_conditions=bcs)
         advector = VectorField(
-            (np.array([C] * (grid[0] + 1)),), halo=halo, boundary_conditions=bcs
+            (np.array([courant] * (grid[0] + 1)),), halo=halo, boundary_conditions=bcs
         )
         stepper = Stepper(options=options, grid=grid)
         solver = Solver(stepper, advectee, advector)
@@ -42,11 +43,12 @@ class TestMPIBoundaryCondition:
         solver.advance(n_steps)
 
         # assert
-        assert abs(C) == 1
+        assert abs(courant) == 1
         np.testing.assert_array_equal(
-            solver.advectee.get(), np.roll(psi, int(C) * n_steps)
+            solver.advectee.get(), np.roll(psi, int(courant) * n_steps)
         )
 
     @staticmethod
     def test_1d_periodic_with_mpi():
-        pass
+        # arrange
+        _ = numba_mpi.size()
