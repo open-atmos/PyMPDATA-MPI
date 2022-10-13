@@ -22,7 +22,8 @@ classifiers = [
 dependencies = [
     "numba_mpi>=0.14",
     "PySDM",
-    "PyMPDATA"
+    "PyMPDATA",
+    "h5py"
 ]
 dynamic = ["version"]
 
