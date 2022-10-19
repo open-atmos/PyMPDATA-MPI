@@ -85,7 +85,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - uses: mpi4py/setup-mpi@v1
       - if: startsWith(matrix.platform, 'ubuntu-')
-        run: sudo apt-get update && sudo apt-get install python3-h5py
+        run: sudo apt-get update && sudo apt-get install -y python3-h5py-mpi
       - if: startsWith(matrix.platform, 'mac-')
         run: |
              brew install hdf5-mpi 
