@@ -87,11 +87,11 @@ jobs:
       - if: startsWith(matrix.platform, 'ubuntu-')
         run: |
              sudo apt-get update && sudo apt-get install -y libhdf5-mpi-dev pkg-config
-             HDF5_MPI="ON" CC=mpicc pip install --no-binary=h5py h5py
-      - if: startsWith(matrix.platform, 'mac-')
+      - if: startsWith(matrix.platform, 'macos-')
         run: |
              brew install hdf5-mpi 
-             HDF5_MPI="ON" CC=mpicc pip install --no-binary=h5py h5py
+             echo HDF5_DIR=/opt/homebrew >> $GITHUB_ENV
+      - run: HDF5_MPI="ON" CC=mpicc pip install --no-binary=h5py h5py
       - run: pip install -e .
       - run: python -We -c "import PySuperDropletLES"
       - run: pip install pytest
