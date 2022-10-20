@@ -89,7 +89,7 @@ jobs:
              sudo apt-get update && sudo apt-get install -y libhdf5-mpi-dev pkg-config
       - if: startsWith(matrix.platform, 'macos-')
         run: |
-             brew install hdf5-mpi 
+             brew unlink mpich && brew install hdf5-mpi 
              echo HDF5_DIR=/opt/homebrew >> $GITHUB_ENV
       - run: HDF5_MPI="ON" CC=mpicc pip install --no-binary=h5py h5py
       - run: pip install -e .
