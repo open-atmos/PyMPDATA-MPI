@@ -27,4 +27,3 @@ def test_hdf5(tmp_path):
 
     with h5py.File(path, 'r') as file:
         assert list(file["test"]) == list(range(0, mpi.size()))
-
