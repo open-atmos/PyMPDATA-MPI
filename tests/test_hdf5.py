@@ -6,19 +6,17 @@ import h5py
 import numba
 import numba_mpi as mpi
 import numpy as np
-import pytest
 from mpi4py import MPI
 
 
 @numba.njit()
-def jit_step(dset):
+def step(dset):
     rank = mpi.rank()
     dset[rank] = rank
     mpi.barrier()
 
 
-@pytest.mark.parametrize("step", (jit_step, jit_step.py_func))
-def test_hdf5(tmp_path, sbtep):
+def test_hdf5(tmp_path):
     rank = mpi.rank()  # The process ID (integer 0-3 for 4-process run)
 
     path_data = np.array(str(tmp_path), "c")
