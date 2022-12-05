@@ -8,11 +8,12 @@ import numba_mpi as mpi
 import numpy as np
 from mpi4py import MPI
 
+RANK = mpi.rank()
+
 
 @numba.njit()
 def step(dset):
-    rank = mpi.rank()
-    dset[rank] = rank
+    dset[RANK] = RANK
 
 
 def test_hdf5(tmp_path):
@@ -27,7 +28,7 @@ def test_hdf5(tmp_path):
 
         tmp = dset[:]
         step(tmp)
-        dset[:] = tmp
+        dset[RANK] = tmp[RANK]
 
     mpi.barrier()
 
