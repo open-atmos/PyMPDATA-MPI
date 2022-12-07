@@ -1,9 +1,9 @@
 # pylint: disable=missing-module-docstring,missing-function-docstring,missing-class-docstring,invalid-name,too-many-locals
 # based on PyMPDATA README example
 
+import os
 from pathlib import Path
 
-import os
 import h5py
 import numba_mpi as mpi
 import numpy as np
@@ -40,7 +40,9 @@ def make_plot(psi, zlim, norm=None):
 def test_2d(tmp_path, plot=True):
     # arrange
     tmp_path = Path(tmp_path) / "ground_truth.hdf5"
-    ground_truth_path = Path(os.path.dirname(__file__))/ "../resources/ground_truth.hdf5"
+    ground_truth_path = (
+        Path(os.path.dirname(__file__)) / "../resources/ground_truth.hdf5"
+    )
     options = Options(n_iters=1)
     # TODO: define domain decomposition
     nx, ny = 24 // mpi.size(), 24
@@ -97,7 +99,9 @@ def test_2d(tmp_path, plot=True):
 
     # plot
     zlim = (-1, 1)
-    with h5py.File(tmp_path, "r") as file, h5py.File(ground_truth_path, "r") as groundTruth:
+    with h5py.File(tmp_path, "r") as file, h5py.File(
+        ground_truth_path, "r"
+    ) as groundTruth:
         norm = make_plot(file["test"][:, :, 0], zlim)
         if plot:
             pyplot.show()
