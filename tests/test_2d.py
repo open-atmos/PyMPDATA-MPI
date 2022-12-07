@@ -109,4 +109,4 @@ def test_2d(tmp_path, plot=True):
         if plot:
             pyplot.show()
 
-        assert (np.array_equal(file["test"], groundTruth["test"]))
+        assert np.array_equal(file["test"], groundTruth["test"])
