@@ -41,7 +41,7 @@ def test_2d(tmp_path, plot=True):
     # arrange
     tmp_path = Path(tmp_path) / "ground_truth.hdf5"
     ground_truth_path = (
-        Path(os.path.dirname(__file__)) / "../resources/ground_truth.hdf5"
+        Path(os.path.dirname(__file__)) / "./resources/ground_truth.hdf5"
     )
     options = Options(n_iters=1)
     # TODO: define domain decomposition
