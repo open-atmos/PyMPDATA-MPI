@@ -37,7 +37,7 @@ def make_plot(psi, zlim, norm=None):
     return cbar.norm
 
 
-def test_2d(tmp_path, plot=True):
+def test_2d(tmp_path, plot=False):
     # arrange
     tmp_path = Path(tmp_path) / "ground_truth.hdf5"
     ground_truth_path = (
@@ -80,7 +80,6 @@ def test_2d(tmp_path, plot=True):
     steps_done = 0
 
     with h5py.File(tmp_path, "w") as file:
-        print(tmp_path)
         dataset = file.create_dataset(
             "test",
             (nx, ny, len(output_steps)),  # TODO: ensure time-slices are contiguous
