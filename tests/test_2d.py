@@ -1,111 +1,123 @@
 # pylint: disable=missing-module-docstring,missing-function-docstring,missing-class-docstring,invalid-name,too-many-locals
 # based on PyMPDATA README example
 
-import os
 from pathlib import Path
-
-import h5py
 import numba_mpi as mpi
+import pytest
+import h5py
 import numpy as np
-from matplotlib import pyplot
+import mpi4py
 from PyMPDATA import Options, ScalarField, Solver, Stepper, VectorField
+from PyMPDATA.impl.domain_decomposition import make_subdomain
 from PyMPDATA.boundary_conditions import Periodic
 
+from .fixtures import mpi_tmp_path as mpi_tmp_path
+assert hasattr(mpi_tmp_path, "_pytestfixturefunction")
 
-class PeriodicMPI(Periodic):
-    pass
+Cx, Cy = -0.5, -0.25
 
-
-def make_plot(psi, zlim, norm=None):
-    # pylint: disable=invalid-name
-    xi, yi = np.indices(psi.shape)
-    _, ax = pyplot.subplots(subplot_kw={"projection": "3d"})
-    pyplot.gca().plot_wireframe(xi + 0.5, yi + 0.5, psi, color="red", linewidth=0.5)
-    ax.set_zlim(zlim)
-    for axis in (ax.xaxis, ax.yaxis, ax.zaxis):
-        axis.pane.fill = False
-        axis.pane.set_edgecolor("black")
-        axis.pane.set_alpha(1)
-    ax.grid(False)
-    ax.set_zticks([])
-    ax.set_xlabel("x/dx")
-    ax.set_ylabel("y/dy")
-    ax.set_proj_type("ortho")
-    cnt = ax.contourf(xi + 0.5, yi + 0.5, psi, zdir="z", offset=-1, norm=norm)
-    cbar = pyplot.colorbar(cnt, pad=0.1, aspect=10, fraction=0.04)
-    # pylint: enable=invalid-name
-    return cbar.norm
+subdomain = make_subdomain(jit_flags={})
 
 
-def test_2d(tmp_path, plot=False):
-    # arrange
-    tmp_path = Path(tmp_path) / "ground_truth.hdf5"
-    ground_truth_path = (
-        Path(os.path.dirname(__file__)) / "./resources/ground_truth.hdf5"
+def mpi_indices(grid, rank, size):
+    start, stop = subdomain(grid[0], rank, size)
+    xi, yi = np.indices((stop - start, grid[1]), dtype=float)
+    xi += start
+    return xi, yi
+
+
+@pytest.mark.parametrize(
+    "grid, rank, size, expected", (
+        ((2, 3), 0, 1, [[0., 0., 0.], [1., 1., 1.]]),
+
+        ((2, 3), 0, 2, [[0., 0., 0.]]),
+        ((2, 3), 1, 2, [[1., 1., 1.]]),
+
+        ((3, 2), 0, 1, [[0., 0.], [1., 1.], [2., 2.]]),
+        ((3, 2), 0, 2, [[0., 0.], [1., 1.]]),
+        ((3, 2), 1, 2, [[2., 2.]]),
     )
-    options = Options(n_iters=1)
-    # TODO: define domain decomposition
-    nx, ny = 24 // mpi.size(), 24
+)
+def test_mpi_indices(grid, rank, size, expected):
+    xi, _ = mpi_indices(grid, rank, size)
+    assert (xi == expected).all()
 
-    Cx, Cy = -0.5, -0.25
-    halo = options.n_halo
 
-    # TODO: xi, yi taking into account where in the domain we are located
-    xi, yi = np.indices((nx, ny), dtype=float)
-
-    boundary_conditions = (PeriodicMPI(), PeriodicMPI())
-
-    advectee = ScalarField(
-        data=np.exp(
-            -((xi + 0.5 - nx / 2) ** 2) / (2 * (nx / 10) ** 2)
-            - (yi + 0.5 - ny / 2) ** 2 / (2 * (ny / 10) ** 2)
-        ),
-        halo=halo,
-        boundary_conditions=boundary_conditions,
-    )
-    advector = VectorField(
-        data=(np.full((nx + 1, ny), Cx), np.full((nx, ny + 1), Cy)),
-        halo=halo,
-        # TODO: injection of PySuperDropletLES boundary condition classes
-        boundary_conditions=boundary_conditions,
+def initial_condition(xi, yi, grid):
+    nx, ny = grid
+    return np.exp(
+        -((xi + 0.5 - nx / 2) ** 2) / (2 * (nx / 10) ** 2)
+        - (yi + 0.5 - ny / 2) ** 2 / (2 * (ny / 10) ** 2)
     )
 
-    stepper = Stepper(options=options, n_dims=2)
 
-    solver = Solver(stepper=stepper, advectee=advectee, advector=advector)
+@pytest.mark.parametrize("n_iters", (1, 2))
+@pytest.mark.parametrize("n_threads", (1,))
+def test_2d(mpi_tmp_path, n_iters, n_threads, grid=(24, 24)):  # pylint: disable=redefined-outer-name
+    paths = {
+        mpi_max_size: Path(mpi_tmp_path) / f"n_iters={n_iters}_mpi_max_size_{mpi_max_size}_n_threads_{n_threads}.hdf5"
+        for mpi_max_size in range(1, mpi.size()+1)
+    }
 
-    output_steps = (0, 75)
+    for mpi_max_size, path in paths.items():
+        size = min(mpi_max_size, mpi.size())
+        rank = mpi.rank()
 
-    # act
-    steps_done = 0
+        if rank >= size:
+            pass
+        else:
+            options = Options(n_iters=n_iters)
+            halo = options.n_halo
 
-    with h5py.File(tmp_path, "w") as file:
-        dataset = file.create_dataset(
-            "test",
-            (nx, ny, len(output_steps)),  # TODO: ensure time-slices are contiguous
-            dtype="float64",
-            compression="gzip",
-        )
+            xi, yi = mpi_indices(grid, rank, size)
+            nx, ny = xi.shape
 
-        for i, output_step in enumerate(output_steps):
-            n_steps = output_step - steps_done
-            solver.advance(n_steps=n_steps)
-            steps_done += n_steps
+            boundary_conditions = (Periodic(), Periodic())
+            advectee = ScalarField(
+                data=initial_condition(xi, yi, grid),
+                halo=halo,
+                boundary_conditions=boundary_conditions,
+            )
 
-            tmp = dataset[:, :, i]
-            tmp[:, :] = solver.advectee.get()
-            dataset[:, :, i] = tmp
+            advector = VectorField(
+                data=(np.full((nx + 1, ny), Cx), np.full((nx, ny + 1), Cy)),
+                halo=halo,
+                boundary_conditions=boundary_conditions,
+            )
+            stepper = Stepper(options=options, n_dims=2, n_threads=n_threads)
+            solver = Solver(stepper=stepper, advectee=advectee, advector=advector)
+            output_steps = (0,)  # TODO: 75)
 
-    # plot
-    zlim = (-1, 1)
-    with h5py.File(tmp_path, "r") as file, h5py.File(
-        ground_truth_path, "r"
-    ) as groundTruth:
-        norm = make_plot(file["test"][:, :, 0], zlim)
-        if plot:
-            pyplot.show()
-        make_plot(file["test"][:, :, 1], zlim, norm)
-        if plot:
-            pyplot.show()
+        if rank == 0:
+            with h5py.File(path, "w") as file:
+                file.create_dataset(
+                    "test",
+                    (*grid, len(output_steps)),
+                    dtype="float64",
+                )
 
-        assert np.array_equal(file["test"], groundTruth["test"])
+        with h5py.File(path, "r", driver='mpio', comm=mpi4py.MPI.COMM_WORLD) as file:
+
+            dataset = file["test"]
+            if rank < size:
+                steps_done = 0
+                for i, output_step in enumerate(output_steps):
+                    n_steps = output_step - steps_done
+                    #solver.advance(n_steps=n_steps)
+                    steps_done += n_steps
+
+                    x_range = slice(*subdomain(grid[0], rank, size))
+                    #dataset[x_range, :, i] = solver.advectee.get()
+
+    mpi.barrier()
+
+    if mpi.rank() != 0:
+        with h5py.File(paths[1], "r") as file0, h5py.File(paths[mpi.rank()+1], "r") as file1:
+            np.testing.assert_array_equal(file0["test"][:, :, :], file1["test"][:, :, :])
+
+
+# from matplotlib import pyplot
+# _, ax = pyplot.subplots(subplot_kw={"projection": "3d"})
+# pyplot.gca().plot_wireframe(xi + 0.5, yi + 0.5, advectee.get(), color="red", linewidth=0.5)
+# pyplot.savefig(f"figs/size={size}_rank={rank}_maxsize={mpi_max_size}.png")
+# pyplot.close()
