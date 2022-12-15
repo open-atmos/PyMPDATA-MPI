@@ -7,7 +7,8 @@ import numba
 import numba_mpi as mpi
 from mpi4py import MPI
 
-from .fixtures import mpi_tmp_path as mpi_tmp_path
+from .fixtures import mpi_tmp_path
+
 assert hasattr(mpi_tmp_path, "_pytestfixturefunction")
 
 
