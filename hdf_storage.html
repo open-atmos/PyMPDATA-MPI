@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.10.0" />
-<title>PySuperDropletLES API documentation</title>
-<meta name="description" content="TODO" />
+<title>PySuperDropletLES.hdf_storage API documentation</title>
+<meta name="description" content="" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
 <link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
@@ -19,50 +19,127 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Package <code>PySuperDropletLES</code></h1>
+<h1 class="title">Module <code>PySuperDropletLES.hdf_storage</code></h1>
 </header>
 <section id="section-intro">
-<p>TODO</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python"># pylint: disable=invalid-name
-&#34;&#34;&#34;
-    TODO
-&#34;&#34;&#34;
+<pre><code class="python"># pylint: disable=missing-module-docstring,missing-function-docstring,missing-class-docstring,invalid-name,too-many-locals
 
-from pkg_resources import DistributionNotFound, VersionConflict, get_distribution
+from pathlib import Path
 
-try:
-    __version__ = get_distribution(__name__).version
-except (DistributionNotFound, VersionConflict):
-    # package is not installed
-    pass</code></pre>
+import h5py
+
+
+class HDFStorage:
+    @staticmethod
+    def create_dataset(*, name: str, path: Path, grid: tuple, steps: tuple):
+        with h5py.File(path, &#34;w&#34;) as file:
+            file.create_dataset(
+                name,
+                (*grid, len(steps)),
+                dtype=&#34;float64&#34;,
+            )
+
+    @staticmethod
+    def mpi_context(path, mode, comm):
+        return h5py.File(path, mode, driver=&#34;mpio&#34;, comm=comm)
+
+    @staticmethod
+    def non_mpi_contex(path, mode):
+        return h5py.File(path, mode)</code></pre>
 </details>
 </section>
 <section>
-<h2 class="section-title" id="header-submodules">Sub-modules</h2>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt><code class="name"><a title="PySuperDropletLES.hdf_storage" href="hdf_storage.html">PySuperDropletLES.hdf_storage</a></code></dt>
+<dt id="PySuperDropletLES.hdf_storage.HDFStorage"><code class="flex name class">
+<span>class <span class="ident">HDFStorage</span></span>
+</code></dt>
 <dd>
 <div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class HDFStorage:
+    @staticmethod
+    def create_dataset(*, name: str, path: Path, grid: tuple, steps: tuple):
+        with h5py.File(path, &#34;w&#34;) as file:
+            file.create_dataset(
+                name,
+                (*grid, len(steps)),
+                dtype=&#34;float64&#34;,
+            )
+
+    @staticmethod
+    def mpi_context(path, mode, comm):
+        return h5py.File(path, mode, driver=&#34;mpio&#34;, comm=comm)
+
+    @staticmethod
+    def non_mpi_contex(path, mode):
+        return h5py.File(path, mode)</code></pre>
+</details>
+<h3>Static methods</h3>
+<dl>
+<dt id="PySuperDropletLES.hdf_storage.HDFStorage.create_dataset"><code class="name flex">
+<span>def <span class="ident">create_dataset</span></span>(<span>*, name: str, path: pathlib.Path, grid: tuple, steps: tuple)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def create_dataset(*, name: str, path: Path, grid: tuple, steps: tuple):
+    with h5py.File(path, &#34;w&#34;) as file:
+        file.create_dataset(
+            name,
+            (*grid, len(steps)),
+            dtype=&#34;float64&#34;,
+        )</code></pre>
+</details>
 </dd>
-<dt><code class="name"><a title="PySuperDropletLES.settings" href="settings.html">PySuperDropletLES.settings</a></code></dt>
+<dt id="PySuperDropletLES.hdf_storage.HDFStorage.mpi_context"><code class="name flex">
+<span>def <span class="ident">mpi_context</span></span>(<span>path, mode, comm)</span>
+</code></dt>
 <dd>
 <div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def mpi_context(path, mode, comm):
+    return h5py.File(path, mode, driver=&#34;mpio&#34;, comm=comm)</code></pre>
+</details>
 </dd>
-<dt><code class="name"><a title="PySuperDropletLES.simulation" href="simulation.html">PySuperDropletLES.simulation</a></code></dt>
+<dt id="PySuperDropletLES.hdf_storage.HDFStorage.non_mpi_contex"><code class="name flex">
+<span>def <span class="ident">non_mpi_contex</span></span>(<span>path, mode)</span>
+</code></dt>
 <dd>
 <div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def non_mpi_contex(path, mode):
+    return h5py.File(path, mode)</code></pre>
+</details>
 </dd>
 </dl>
-</section>
-<section>
-</section>
-<section>
-</section>
-<section>
+</dd>
+</dl>
 </section>
 </article>
 <nav id="sidebar">
@@ -71,11 +148,21 @@ except (DistributionNotFound, VersionConflict):
 <ul></ul>
 </div>
 <ul id="index">
-<li><h3><a href="#header-submodules">Sub-modules</a></h3>
+<li><h3>Super-module</h3>
 <ul>
-<li><code><a title="PySuperDropletLES.hdf_storage" href="hdf_storage.html">PySuperDropletLES.hdf_storage</a></code></li>
-<li><code><a title="PySuperDropletLES.settings" href="settings.html">PySuperDropletLES.settings</a></code></li>
-<li><code><a title="PySuperDropletLES.simulation" href="simulation.html">PySuperDropletLES.simulation</a></code></li>
+<li><code><a title="PySuperDropletLES" href="index.html">PySuperDropletLES</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="PySuperDropletLES.hdf_storage.HDFStorage" href="#PySuperDropletLES.hdf_storage.HDFStorage">HDFStorage</a></code></h4>
+<ul class="">
+<li><code><a title="PySuperDropletLES.hdf_storage.HDFStorage.create_dataset" href="#PySuperDropletLES.hdf_storage.HDFStorage.create_dataset">create_dataset</a></code></li>
+<li><code><a title="PySuperDropletLES.hdf_storage.HDFStorage.mpi_context" href="#PySuperDropletLES.hdf_storage.HDFStorage.mpi_context">mpi_context</a></code></li>
+<li><code><a title="PySuperDropletLES.hdf_storage.HDFStorage.non_mpi_contex" href="#PySuperDropletLES.hdf_storage.HDFStorage.non_mpi_contex">non_mpi_contex</a></code></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.10.0" />
-<title>PySuperDropletLES API documentation</title>
-<meta name="description" content="TODO" />
+<title>PySuperDropletLES.settings API documentation</title>
+<meta name="description" content="" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
 <link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
@@ -19,50 +19,94 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Package <code>PySuperDropletLES</code></h1>
+<h1 class="title">Module <code>PySuperDropletLES.settings</code></h1>
 </header>
 <section id="section-intro">
-<p>TODO</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python"># pylint: disable=invalid-name
-&#34;&#34;&#34;
-    TODO
-&#34;&#34;&#34;
+<pre><code class="python"># pylint: disable=invalid-name, missing-module-docstring, missing-class-docstring, missing-function-docstring, too-few-public-methods
+import numpy as np
 
-from pkg_resources import DistributionNotFound, VersionConflict, get_distribution
 
-try:
-    __version__ = get_distribution(__name__).version
-except (DistributionNotFound, VersionConflict):
-    # package is not installed
-    pass</code></pre>
+class Settings:
+    courant_field = -0.5, -0.25
+    output_steps = (0,)  # TODO: 75)
+
+    @staticmethod
+    def initial_condition(xi, yi, grid):
+        nx, ny = grid
+        return np.exp(
+            -((xi + 0.5 - nx / 2) ** 2) / (2 * (nx / 10) ** 2)
+            - (yi + 0.5 - ny / 2) ** 2 / (2 * (ny / 10) ** 2)
+        )</code></pre>
 </details>
 </section>
 <section>
-<h2 class="section-title" id="header-submodules">Sub-modules</h2>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt><code class="name"><a title="PySuperDropletLES.hdf_storage" href="hdf_storage.html">PySuperDropletLES.hdf_storage</a></code></dt>
+<dt id="PySuperDropletLES.settings.Settings"><code class="flex name class">
+<span>class <span class="ident">Settings</span></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Settings:
+    courant_field = -0.5, -0.25
+    output_steps = (0,)  # TODO: 75)
+
+    @staticmethod
+    def initial_condition(xi, yi, grid):
+        nx, ny = grid
+        return np.exp(
+            -((xi + 0.5 - nx / 2) ** 2) / (2 * (nx / 10) ** 2)
+            - (yi + 0.5 - ny / 2) ** 2 / (2 * (ny / 10) ** 2)
+        )</code></pre>
+</details>
+<h3>Class variables</h3>
+<dl>
+<dt id="PySuperDropletLES.settings.Settings.courant_field"><code class="name">var <span class="ident">courant_field</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt><code class="name"><a title="PySuperDropletLES.settings" href="settings.html">PySuperDropletLES.settings</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="PySuperDropletLES.simulation" href="simulation.html">PySuperDropletLES.simulation</a></code></dt>
+<dt id="PySuperDropletLES.settings.Settings.output_steps"><code class="name">var <span class="ident">output_steps</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
 </dl>
-</section>
-<section>
-</section>
-<section>
-</section>
-<section>
+<h3>Static methods</h3>
+<dl>
+<dt id="PySuperDropletLES.settings.Settings.initial_condition"><code class="name flex">
+<span>def <span class="ident">initial_condition</span></span>(<span>xi, yi, grid)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def initial_condition(xi, yi, grid):
+    nx, ny = grid
+    return np.exp(
+        -((xi + 0.5 - nx / 2) ** 2) / (2 * (nx / 10) ** 2)
+        - (yi + 0.5 - ny / 2) ** 2 / (2 * (ny / 10) ** 2)
+    )</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
 </section>
 </article>
 <nav id="sidebar">
@@ -71,11 +115,21 @@ except (DistributionNotFound, VersionConflict):
 <ul></ul>
 </div>
 <ul id="index">
-<li><h3><a href="#header-submodules">Sub-modules</a></h3>
+<li><h3>Super-module</h3>
 <ul>
-<li><code><a title="PySuperDropletLES.hdf_storage" href="hdf_storage.html">PySuperDropletLES.hdf_storage</a></code></li>
-<li><code><a title="PySuperDropletLES.settings" href="settings.html">PySuperDropletLES.settings</a></code></li>
-<li><code><a title="PySuperDropletLES.simulation" href="simulation.html">PySuperDropletLES.simulation</a></code></li>
+<li><code><a title="PySuperDropletLES" href="index.html">PySuperDropletLES</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="PySuperDropletLES.settings.Settings" href="#PySuperDropletLES.settings.Settings">Settings</a></code></h4>
+<ul class="">
+<li><code><a title="PySuperDropletLES.settings.Settings.courant_field" href="#PySuperDropletLES.settings.Settings.courant_field">courant_field</a></code></li>
+<li><code><a title="PySuperDropletLES.settings.Settings.initial_condition" href="#PySuperDropletLES.settings.Settings.initial_condition">initial_condition</a></code></li>
+<li><code><a title="PySuperDropletLES.settings.Settings.output_steps" href="#PySuperDropletLES.settings.Settings.output_steps">output_steps</a></code></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
