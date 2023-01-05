@@ -12,6 +12,7 @@ from matplotlib import pyplot
 from PySuperDropletLES.hdf_storage import HDFStorage
 from PySuperDropletLES.settings import Settings
 from PySuperDropletLES.simulation import Simulation
+from PySuperDropletLES.domain_decomposition import subdomain
 
 from .fixtures import mpi_tmp_path
 
@@ -67,7 +68,7 @@ def test_2d(
     paths = {
         mpi_max_size: Path(mpi_tmp_path)
         / f"n_iters={n_iters}_mpi_max_size_{mpi_max_size}_n_threads_{n_threads}.hdf5"
-        for mpi_max_size in (range(1, mpi.size() + 1))
+        for mpi_max_size in reversed((range(1, mpi.size() + 1)))
     }
 
     Storage = HDFStorage
@@ -107,7 +108,7 @@ def test_2d(
                     steps_done += n_steps
 
                     x_range = slice(
-                        *Simulation.subdomain(grid[0], rank, truncated_size)
+                        *subdomain(grid[0], rank, truncated_size)
                     )
                     dataset[x_range, :, i] = simulation.advectee.get()
 

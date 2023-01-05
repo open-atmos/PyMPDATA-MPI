@@ -4,12 +4,13 @@ from functools import lru_cache
 import numba
 import numba_mpi as mpi
 import numpy as np
-import mpi4py
+from mpi4py import MPI
 
+from .domain_decomposition import MPI_DIM
 from PyMPDATA.impl.enumerations import SIGN_LEFT, SIGN_RIGHT
 
 TAG = 44
-
+comm = MPI.COMM_WORLD
 
 class MPIPeriodic:
     """class which instances are to be passed in boundary_conditions tuple to the
@@ -48,11 +49,17 @@ def _make_scalar_periodic(ats, jit_flags):
 
         buf = np.full((1,), ats(*psi, sign * span))
 
-        print("from rank: ", rank, " SENDING TO: ", peers[sign])
-        mpi.send(buf, dest=peers[sign], tag=sign)
-        #print("from rank: ", rank, " RECEIVING FROM: ", peers[sign])
-        mpi.recv(buf, source=peers[sign], tag=sign*(-1))
-        #print("before return, rank: ", rank)
+        if SIGN_LEFT == sign:
+            print("from rank: ", rank, " SENDING TO: ", peers[sign], " psi[0][mpi_dim]:", psi[0][MPI_DIM])
+            comm.isend(buf, dest=peers[sign], tag=psi[0][MPI_DIM])
+            comm.irecv(buf, source=peers[sign], tag=psi[0][MPI_DIM] + sign * span)
+        elif SIGN_RIGHT == sign:
+            print("rank: ", rank, " RECEIVING FROM: ", peers[sign], " psi[0][mpi_dim]+sign*span: ",
+                  psi[0][MPI_DIM] + sign * span)
+            comm.isend(buf, dest=peers[sign], tag=psi[0][MPI_DIM] + sign * span)
+            comm.irecv(buf, source=peers[sign], tag=psi[0][MPI_DIM])
+
+        print("before return, rank: ", rank, ", *psi: ", psi[0][MPI_DIM])
         return buf[0]
 
     return fill_halos
