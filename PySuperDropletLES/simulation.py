@@ -1,6 +1,9 @@
 # pylint: disable=missing-module-docstring,missing-function-docstring,missing-class-docstring,invalid-name,too-many-locals
 
 import numpy as np
+
+from .periodic import MPIPeriodic
+
 from PyMPDATA import Options, ScalarField, Solver, Stepper, VectorField
 from PyMPDATA.boundary_conditions import Periodic
 from PyMPDATA.impl.domain_decomposition import make_subdomain
@@ -18,7 +21,7 @@ class Simulation:
         xi, yi = Simulation.mpi_indices(grid, rank, size)
         nx, ny = xi.shape
 
-        boundary_conditions = (Periodic(), Periodic())
+        boundary_conditions = (MPIPeriodic(), Periodic())
         self.advectee = ScalarField(
             data=initial_condition(xi, yi, grid),
             halo=halo,
