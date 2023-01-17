@@ -66,8 +66,6 @@ class ReadmeSettings(Settings):
 def test_2d(
     mpi_tmp_path, n_iters, n_threads, output_steps, grid=(24, 24), plot=True
 ):  # pylint: disable=redefined-outer-name
-    print(Path(mpi_tmp_path))
-
     paths = {
         mpi_max_size: Path(mpi_tmp_path)
         / f"n_iters={n_iters}_mpi_max_size_{mpi_max_size}_n_threads_{n_threads}.hdf5"
@@ -80,7 +78,6 @@ def test_2d(
     settings = ReadmeSettings(output_steps)
 
     for mpi_max_size, path in paths.items():
-        print("########################, max_size ", mpi_max_size)
         truncated_size = min(mpi_max_size, mpi.size())
         rank = mpi.rank()
 

@@ -7,7 +7,6 @@ import numpy as np
 from mpi4py import MPI
 from PyMPDATA.boundary_conditions import Periodic
 
-from .domain_decomposition import MPI_DIM
 from PyMPDATA.impl.enumerations import SIGN_LEFT, SIGN_RIGHT
 
 TAG = 44
@@ -48,23 +47,19 @@ def _make_scalar_periodic(ats, jit_flags, size):
             (rank - 1) % size,  # LEFT
             (rank + 1) % size  # RIGHT
         )
-        #print("rank: ", mpi.rank(), " sign: ", sign, " ,index: ", sign*span)
 
-        buf = np.empty((1,))#np.full((1,), ats(*psi, sign * span))
+        buf = np.empty((1,))
 
         #TODO: take halo size into account when reading data using ats()
         if SIGN_LEFT == sign:
-            print("LEFT rank: ", rank, " SENDING TO: ", peers[sign], " writing to(index): ", psi[0][0], "reading from(index): ", psi[0][0] + sign)
             buf[0] = ats(*psi, sign)
-            mpi.send(buf, dest=peers[sign], tag=0)
-            mpi.recv(buf, source=peers[sign], tag=0)
+            mpi.send(buf, dest=peers[sign], tag=TAG)
+            mpi.recv(buf, source=peers[sign], tag=TAG)
         elif SIGN_RIGHT == sign:
-            print("RIGHT rank: ", rank, " RECEIVING FROM: ", peers[sign], "reading from(index): ", psi[0][0] + sign, " writing to(index): ", psi[0][0])
-            mpi.recv(buf, source=peers[sign], tag=0)
+            mpi.recv(buf, source=peers[sign], tag=TAG)
             buf[0] = ats(*psi, sign)
-            mpi.send(buf, dest=peers[sign], tag=0)
+            mpi.send(buf, dest=peers[sign], tag=TAG)
 
-        print("before return, rank: ", rank)
         return buf[0]
 
     return fill_halos
