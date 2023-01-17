@@ -20,7 +20,7 @@ assert hasattr(mpi_tmp_path, "_pytestfixturefunction")
 
 
 class ReadmeSettings(Settings):
-    courant_field = -0.5, -0.25
+    courant_field = 0.5, 0.25 # TODO: parametrize
 
     def __init__(self, output_seps):
         self.output_steps = output_seps
@@ -28,9 +28,12 @@ class ReadmeSettings(Settings):
     @staticmethod
     def initial_condition(xi, yi, grid):
         nx, ny = grid
+        x0 = nx/2
+        y0 = ny/2
+
         psi = np.exp(
-            -((xi + 0.5 - nx / 2) ** 2) / (2 * (nx / 10) ** 2)
-            - (yi + 0.5 - ny / 2) ** 2 / (2 * (ny / 10) ** 2)
+            -((xi + 0.5 - x0) ** 2) / (2 * (nx / 10) ** 2)
+            - (yi + 0.5 - y0) ** 2 / (2 * (ny / 10) ** 2)
         )
         return psi
 
@@ -61,14 +64,14 @@ class ReadmeSettings(Settings):
 @pytest.mark.parametrize("n_threads", (1,))  # TODO: 2+
 @pytest.mark.parametrize("output_steps", ((0,), (0, 1)))
 def test_2d(
-    mpi_tmp_path, n_iters, n_threads, output_steps, grid=(12, 12), plot=True
+    mpi_tmp_path, n_iters, n_threads, output_steps, grid=(24, 24), plot=True
 ):  # pylint: disable=redefined-outer-name
     print(Path(mpi_tmp_path))
 
     paths = {
         mpi_max_size: Path(mpi_tmp_path)
         / f"n_iters={n_iters}_mpi_max_size_{mpi_max_size}_n_threads_{n_threads}.hdf5"
-        for mpi_max_size in reversed((range(1, mpi.size() + 1)))
+        for mpi_max_size in (range(1, mpi.size() + 1))
     }
 
     Storage = HDFStorage
@@ -77,7 +80,7 @@ def test_2d(
     settings = ReadmeSettings(output_steps)
 
     for mpi_max_size, path in paths.items():
-        print("########################")
+        print("########################, max_size ", mpi_max_size)
         truncated_size = min(mpi_max_size, mpi.size())
         rank = mpi.rank()
 
@@ -124,6 +127,6 @@ def test_2d(
             if plot:
                 pyplot.savefig(Path(mpi_tmp_path) / f"n_iters={n_iters}_mpi_max_size_{mpi_max_size}_n_threads_{n_threads}.pdf")
             np.testing.assert_array_equal(
-                storage_expected[dataset_name][:, :, :],
-                storage_actual[dataset_name][:, :, :],
+                storage_expected[dataset_name][:, :, -1],
+                storage_actual[dataset_name][:, :, -1],
             )

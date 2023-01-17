@@ -9,11 +9,10 @@ from PyMPDATA import Options, ScalarField, Solver, Stepper, VectorField
 from PyMPDATA.boundary_conditions import Periodic
 
 
-
 class Simulation:
 
     def __init__(
-        self, *, n_iters, n_threads, grid, rank, size, initial_condition, courant_field
+            self, *, n_iters, n_threads, grid, rank, size, initial_condition, courant_field
     ):
         options = Options(n_iters=n_iters)
         halo = options.n_halo
@@ -21,7 +20,7 @@ class Simulation:
         xi, yi = mpi_indices(grid, rank, size)
         nx, ny = xi.shape
 
-        boundary_conditions = (MPIPeriodic(), Periodic())
+        boundary_conditions = (MPIPeriodic(size=size), Periodic())
         self.advectee = ScalarField(
             data=initial_condition(xi, yi, grid),
             halo=halo,
@@ -36,7 +35,7 @@ class Simulation:
             halo=halo,
             boundary_conditions=boundary_conditions,
         )
-        stepper = Stepper(options=options, n_dims=2, n_threads=n_threads)
+        stepper = Stepper(options=options, n_dims=2, n_threads=n_threads, left_first=rank % 2 == 0)
         self.solver = Solver(stepper=stepper, advectee=self.advectee, advector=advector)
 
     def advance(self, n_steps):
