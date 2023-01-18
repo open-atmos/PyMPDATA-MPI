@@ -181,7 +181,7 @@ def mpi_indices(grid, rank, size):
 <pre><code class="python">@numba.njit(**jit_flags)
 def subdomain(span, rank, size):
     if rank &gt;= size:
-        raise ValueError()
+        raise ValueError(&#34;rank &gt;= size&#34;)
 
     n_max = math.ceil(span / size)
     start = n_max * rank
