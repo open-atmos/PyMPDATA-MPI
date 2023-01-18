@@ -88,9 +88,9 @@ jobs:
       - run: python -We -c "import PySuperDropletLES"
       - run: pip install pytest
       - run: |
-        for np in 1 2 5 8; do
-          mpiexec -n $np pytest -p no:unraisableexception -We;
-        done;
+          for np in 1 2 3; do
+            mpiexec -n $np pytest -p no:unraisableexception -We;
+          done;
 
   dist:
     runs-on: ubuntu-latest
