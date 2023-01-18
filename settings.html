@@ -27,20 +27,10 @@
 <span>Expand source code</span>
 </summary>
 <pre><code class="python"># pylint: disable=invalid-name, missing-module-docstring, missing-class-docstring, missing-function-docstring, too-few-public-methods
-import numpy as np
 
 
 class Settings:
-    courant_field = -0.5, -0.25
-    output_steps = (0,)  # TODO: 75)
-
-    @staticmethod
-    def initial_condition(xi, yi, grid):
-        nx, ny = grid
-        return np.exp(
-            -((xi + 0.5 - nx / 2) ** 2) / (2 * (nx / 10) ** 2)
-            - (yi + 0.5 - ny / 2) ** 2 / (2 * (ny / 10) ** 2)
-        )</code></pre>
+    pass</code></pre>
 </details>
 </section>
 <section>
@@ -62,49 +52,8 @@ class Settings:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class Settings:
-    courant_field = -0.5, -0.25
-    output_steps = (0,)  # TODO: 75)
-
-    @staticmethod
-    def initial_condition(xi, yi, grid):
-        nx, ny = grid
-        return np.exp(
-            -((xi + 0.5 - nx / 2) ** 2) / (2 * (nx / 10) ** 2)
-            - (yi + 0.5 - ny / 2) ** 2 / (2 * (ny / 10) ** 2)
-        )</code></pre>
+    pass</code></pre>
 </details>
-<h3>Class variables</h3>
-<dl>
-<dt id="PySuperDropletLES.settings.Settings.courant_field"><code class="name">var <span class="ident">courant_field</span></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="PySuperDropletLES.settings.Settings.output_steps"><code class="name">var <span class="ident">output_steps</span></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-</dl>
-<h3>Static methods</h3>
-<dl>
-<dt id="PySuperDropletLES.settings.Settings.initial_condition"><code class="name flex">
-<span>def <span class="ident">initial_condition</span></span>(<span>xi, yi, grid)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@staticmethod
-def initial_condition(xi, yi, grid):
-    nx, ny = grid
-    return np.exp(
-        -((xi + 0.5 - nx / 2) ** 2) / (2 * (nx / 10) ** 2)
-        - (yi + 0.5 - ny / 2) ** 2 / (2 * (ny / 10) ** 2)
-    )</code></pre>
-</details>
-</dd>
-</dl>
 </dd>
 </dl>
 </section>
@@ -124,11 +73,6 @@ def initial_condition(xi, yi, grid):
 <ul>
 <li>
 <h4><code><a title="PySuperDropletLES.settings.Settings" href="#PySuperDropletLES.settings.Settings">Settings</a></code></h4>
-<ul class="">
-<li><code><a title="PySuperDropletLES.settings.Settings.courant_field" href="#PySuperDropletLES.settings.Settings.courant_field">courant_field</a></code></li>
-<li><code><a title="PySuperDropletLES.settings.Settings.initial_condition" href="#PySuperDropletLES.settings.Settings.initial_condition">initial_condition</a></code></li>
-<li><code><a title="PySuperDropletLES.settings.Settings.output_steps" href="#PySuperDropletLES.settings.Settings.output_steps">output_steps</a></code></li>
-</ul>
 </li>
 </ul>
 </li>
