@@ -6,7 +6,6 @@ import numba_mpi as mpi
 import numpy as np
 from mpi4py import MPI
 from PyMPDATA.boundary_conditions import Periodic
-
 from PyMPDATA.impl.enumerations import SIGN_LEFT, SIGN_RIGHT
 
 TAG = 44
@@ -37,20 +36,15 @@ class MPIPeriodic:
 
 @lru_cache()
 def _make_scalar_periodic(ats, jit_flags, size):
-
     @numba.njit(**jit_flags)
     def fill_halos(psi, span, sign):
         rank = mpi.rank()
 
-        peers = (
-            -1,
-            (rank - 1) % size,  # LEFT
-            (rank + 1) % size  # RIGHT
-        )
+        peers = (-1, (rank - 1) % size, (rank + 1) % size)  # LEFT  # RIGHT
 
         buf = np.empty((1,))
 
-        #TODO: take halo size into account when reading data using ats()
+        # TODO: take halo size into account when reading data using ats()
         if SIGN_LEFT == sign:
             buf[0] = ats(*psi, sign)
             mpi.send(buf, dest=peers[sign], tag=TAG)

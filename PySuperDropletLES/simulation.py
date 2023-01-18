@@ -1,18 +1,16 @@
 # pylint: disable=missing-module-docstring,missing-function-docstring,missing-class-docstring,invalid-name,too-many-locals
 
 import numpy as np
-
-from .periodic import MPIPeriodic
-from .domain_decomposition import mpi_indices
-
 from PyMPDATA import Options, ScalarField, Solver, Stepper, VectorField
 from PyMPDATA.boundary_conditions import Periodic
 
+from .domain_decomposition import mpi_indices
+from .periodic import MPIPeriodic
+
 
 class Simulation:
-
     def __init__(
-            self, *, n_iters, n_threads, grid, rank, size, initial_condition, courant_field
+        self, *, n_iters, n_threads, grid, rank, size, initial_condition, courant_field
     ):
         options = Options(n_iters=n_iters)
         halo = options.n_halo
@@ -35,7 +33,9 @@ class Simulation:
             halo=halo,
             boundary_conditions=boundary_conditions,
         )
-        stepper = Stepper(options=options, n_dims=2, n_threads=n_threads, left_first=rank % 2 == 0)
+        stepper = Stepper(
+            options=options, n_dims=2, n_threads=n_threads, left_first=rank % 2 == 0
+        )
         self.solver = Solver(stepper=stepper, advectee=self.advectee, advector=advector)
 
     def advance(self, n_steps):

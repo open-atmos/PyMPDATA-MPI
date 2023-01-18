@@ -9,10 +9,10 @@ import numpy as np
 import pytest
 from matplotlib import pyplot
 
+from PySuperDropletLES.domain_decomposition import subdomain
 from PySuperDropletLES.hdf_storage import HDFStorage
 from PySuperDropletLES.settings import Settings
 from PySuperDropletLES.simulation import Simulation
-from PySuperDropletLES.domain_decomposition import subdomain
 
 from .fixtures import mpi_tmp_path
 
@@ -20,7 +20,7 @@ assert hasattr(mpi_tmp_path, "_pytestfixturefunction")
 
 
 class ReadmeSettings(Settings):
-    courant_field = 0.5, 0.25 # TODO: parametrize
+    courant_field = 0.5, 0.25  # TODO: parametrize
 
     def __init__(self, output_seps):
         self.output_steps = output_seps
@@ -28,8 +28,8 @@ class ReadmeSettings(Settings):
     @staticmethod
     def initial_condition(xi, yi, grid):
         nx, ny = grid
-        x0 = nx/2
-        y0 = ny/2
+        x0 = nx / 2
+        y0 = ny / 2
 
         psi = np.exp(
             -((xi + 0.5 - x0) ** 2) / (2 * (nx / 10) ** 2)
@@ -40,23 +40,20 @@ class ReadmeSettings(Settings):
     @staticmethod
     def quick_look(psi, zlim, norm=None):
         xi, yi = np.indices(psi.shape)
-        fig, ax = pyplot.subplots(subplot_kw={"projection": "3d"})
-        pyplot.gca().plot_wireframe(
-            xi + .5, yi + .5,
-            psi, color='red', linewidth=.5
-        )
+        _, ax = pyplot.subplots(subplot_kw={"projection": "3d"})
+        pyplot.gca().plot_wireframe(xi + 0.5, yi + 0.5, psi, color="red", linewidth=0.5)
         ax.set_zlim(zlim)
         for axis in (ax.xaxis, ax.yaxis, ax.zaxis):
             axis.pane.fill = False
-            axis.pane.set_edgecolor('black')
+            axis.pane.set_edgecolor("black")
             axis.pane.set_alpha(1)
         ax.grid(False)
         ax.set_zticks([])
-        ax.set_xlabel('x/dx')
-        ax.set_ylabel('y/dy')
-        ax.set_proj_type('ortho')
-        cnt = ax.contourf(xi + .5, yi + .5, psi, zdir='z', offset=-1, norm=norm)
-        cbar = pyplot.colorbar(cnt, pad=.1, aspect=10, fraction=.04)
+        ax.set_xlabel("x/dx")
+        ax.set_ylabel("y/dy")
+        ax.set_proj_type("ortho")
+        cnt = ax.contourf(xi + 0.5, yi + 0.5, psi, zdir="z", offset=-1, norm=norm)
+        cbar = pyplot.colorbar(cnt, pad=0.1, aspect=10, fraction=0.04)
         return cbar.norm
 
 
@@ -107,9 +104,7 @@ def test_2d(
                     simulation.advance(n_steps=n_steps)
                     steps_done += n_steps
 
-                    x_range = slice(
-                        *subdomain(grid[0], rank, truncated_size)
-                    )
+                    x_range = slice(*subdomain(grid[0], rank, truncated_size))
                     dataset[x_range, :, i] = simulation.advectee.get()
 
     mpi.barrier()
@@ -122,7 +117,8 @@ def test_2d(
         ) as storage_actual:
             settings.quick_look(storage_actual[dataset_name][:, :, -1], zlim=(-1, 1))
             if plot:
-                pyplot.savefig(Path(mpi_tmp_path) / f"n_iters={n_iters}_mpi_max_size_{mpi_max_size}_n_threads_{n_threads}.pdf")
+                plot_path = f"n_iters={n_iters}_mpi_max_size_{mpi_max_size}_n_threads_{n_threads}.pdf"
+                pyplot.savefig(Path(mpi_tmp_path) / plot_path)
             np.testing.assert_array_equal(
                 storage_expected[dataset_name][:, :, -1],
                 storage_actual[dataset_name][:, :, -1],
