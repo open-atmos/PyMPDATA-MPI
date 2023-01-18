@@ -89,7 +89,7 @@ jobs:
       - run: pip install pytest
       - run: |
           for np in 1 2 3; do
-            mpiexec -n $np pytest -p no:unraisableexception -We;
+            mpiexec --oversubscribe -n $np pytest -p no:unraisableexception -We;
           done;
 
   dist:
