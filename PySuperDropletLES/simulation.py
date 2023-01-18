@@ -1,4 +1,4 @@
-# pylint: disable=missing-module-docstring,missing-function-docstring,missing-class-docstring,invalid-name,too-many-locals
+# pylint: disable=missing-module-docstring,missing-function-docstring,missing-class-docstring,invalid-name,too-few-public-methods,too-many-locals
 
 import numpy as np
 from PyMPDATA import Options, ScalarField, Solver, Stepper, VectorField

@@ -1,3 +1,5 @@
+# pylint: disable=invalid-name,unused-argument,c-extension-no-member
+
 """ periodic/cyclic boundary condition logic """
 from functools import lru_cache
 

@@ -1,4 +1,5 @@
-# pylint: disable=missing-module-docstring,missing-function-docstring,missing-class-docstring,invalid-name,too-many-locals
+# pylint: disable=missing-module-docstring,missing-function-docstring,
+# pylint: disable=missing-class-docstring,invalid-name,too-many-locals,too-many-arguments,c-extension-no-member
 # based on PyMPDATA README example
 
 from pathlib import Path
@@ -117,7 +118,7 @@ def test_2d(
         ) as storage_actual:
             settings.quick_look(storage_actual[dataset_name][:, :, -1], zlim=(-1, 1))
             if plot:
-                plot_path = f"n_iters={n_iters}_mpi_max_size_{mpi_max_size}_n_threads_{n_threads}.pdf"
+                plot_path = f"n_iters={n_iters}_threads_{n_threads}.pdf"
                 pyplot.savefig(Path(mpi_tmp_path) / plot_path)
             np.testing.assert_array_equal(
                 storage_expected[dataset_name][:, :, -1],

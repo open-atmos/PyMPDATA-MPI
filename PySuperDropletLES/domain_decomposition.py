@@ -1,3 +1,5 @@
+# pylint: disable=missing-module-docstring,missing-function-docstring,missing-class-docstring,invalid-name
+
 import numpy as np
 from PyMPDATA.impl.domain_decomposition import make_subdomain
 
