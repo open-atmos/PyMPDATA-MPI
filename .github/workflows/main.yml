@@ -91,7 +91,8 @@ jobs:
         run: |
              brew unlink mpich && brew install hdf5-mpi 
              echo HDF5_DIR=/opt/homebrew >> $GITHUB_ENV
-      - run: HDF5_MPI="ON" CC=mpicc pip install --use-pep517 h5py
+      - run: pip install pip<23.0  # for --no-binary option
+      - run: HDF5_MPI="ON" CC=mpicc pip install --no-binary=h5py h5py
       - run: pip install -e .
       - run: python -We -c "import PySuperDropletLES"
       - run: pip install pytest
