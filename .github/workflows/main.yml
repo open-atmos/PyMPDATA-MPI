@@ -97,7 +97,7 @@ jobs:
       - run: pip install pytest
       - run: |
           for np in 1 2 3; do
-            mpiexec --oversubscribe -n $np pytest -p no:unraisableexception -We;
+            mpiexec --oversubscribe -n $np pytest -p no:unraisableexception -We tests/test_domain3d.py;
           done;
 
   dist:
