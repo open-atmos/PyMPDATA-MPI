@@ -96,10 +96,11 @@ jobs:
       - run: python -We -c "import PySuperDropletLES"
       - run: pip install pytest
       - run: |
-          for np in 1 2 3; do
-            mpiexec --oversubscribe -n $np pytest -p no:unraisableexception -We;
+          for jit in 1 0; do
+            for np in 1 2 3; do
+              NUMBA_DISABLE_JIT=$jit mpiexec --oversubscribe -n $np pytest -p no:unraisableexception -We;
+            done;
           done;
-
   dist:
     runs-on: ubuntu-latest
     needs: [build]
