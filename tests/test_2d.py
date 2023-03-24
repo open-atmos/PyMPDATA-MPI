@@ -58,11 +58,11 @@ class ReadmeSettings(Settings):
         return cbar.norm
 
 
-@pytest.mark.parametrize("n_iters", (1,))  # TODO: 2+
+@pytest.mark.parametrize("n_iters", (2,))  # TODO: 2+
 @pytest.mark.parametrize("n_threads", (1,))  # TODO: 2+
 @pytest.mark.parametrize("output_steps", ((0,), (0, 1)))
 def test_2d(
-    mpi_tmp_path, n_iters, n_threads, output_steps, grid=(24, 24), plot=True
+    mpi_tmp_path, n_iters, n_threads, output_steps, grid=(24, 24), plot=False
 ):  # pylint: disable=redefined-outer-name
     paths = {
         mpi_max_size: Path(mpi_tmp_path)
