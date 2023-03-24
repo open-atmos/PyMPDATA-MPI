@@ -96,9 +96,10 @@ jobs:
       - run: python -We -c "import PySuperDropletLES"
       - run: pip install pytest
       - run: |
-          for jit in 1 0; do
+          for disable_jit in 1 0; do
             for np in 1 2 3; do
-              NUMBA_DISABLE_JIT=$jit mpiexec --oversubscribe -n $np pytest -p no:unraisableexception -We;
+              echo "======= disable_jit:$disable_jit ======= np:$np =======";
+              NUMBA_DISABLE_JIT=$disable_jit mpiexec --oversubscribe -n $np pytest -p no:unraisableexception -We;
             done;
           done;
   dist:
