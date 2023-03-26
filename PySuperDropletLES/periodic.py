@@ -8,10 +8,11 @@ import numba_mpi as mpi
 import numpy as np
 from mpi4py import MPI
 from PyMPDATA.boundary_conditions import Periodic
-from PyMPDATA.impl.enumerations import SIGN_LEFT, SIGN_RIGHT
+from PyMPDATA.impl.enumerations import INVALID_INDEX, SIGN_LEFT, SIGN_RIGHT
 
 TAG = 44
 comm = MPI.COMM_WORLD
+IRRELEVANT = 666
 
 
 class MPIPeriodic:
@@ -33,21 +34,47 @@ class MPIPeriodic:
     def make_vector(self, indexers, halo, dtype, jit_flags, dimension_index):
         """returns (lru-cached) Numba-compiled vector halo-filling callable"""
         if self.__size == 1:
-            return Periodic.make_vector(indexers, halo, dtype, jit_flags, dimension_index)
-        return _make_vector_periodic(indexers, jit_flags, dimension_index, self.__size)
+            return Periodic.make_vector(
+                indexers, halo, dtype, jit_flags, dimension_index
+            )
+        return _make_vector_periodic(
+            indexers, halo, jit_flags, dimension_index, self.__size
+        )
 
 
-def make_send_recv(jit_flags, fill_buf):
+def make_send_recv(set_value, jit_flags, fill_buf):
     @numba.njit(**jit_flags)
-    def _send_recv(peers, buf, psi, i_rng, j_rng, k_rng, sign, dim):
+    def _send_recv(size, psi, i_rng, j_rng, k_rng, sign, dim, output):
+        buf = np.empty(
+            (
+                len(i_rng),
+                len(k_rng),
+            )
+        )
+
+        rank = mpi.rank()
+        peers = (-1, (rank - 1) % size, (rank + 1) % size)  # LEFT  # RIGHT
+
         if SIGN_LEFT == sign:
-            fill_buf(buf, psi, i_rng, j_rng, k_rng, sign, dim)
+            fill_buf(buf, psi, i_rng, k_rng, sign, dim)
             mpi.send(buf, dest=peers[sign], tag=TAG)
             mpi.recv(buf, source=peers[sign], tag=TAG)
         elif SIGN_RIGHT == sign:
             mpi.recv(buf, source=peers[sign], tag=TAG)
-            fill_buf(buf, psi, i_rng, j_rng, k_rng, sign, dim)
-            mpi.send(buf, dest=peers[sign], tag=TAG)
+            tmp = np.empty_like(buf)
+            fill_buf(tmp, psi, i_rng, k_rng, sign, dim)
+            mpi.send(tmp, dest=peers[sign], tag=TAG)
+
+        for i in i_rng:
+            for j in j_rng:
+                for k in k_rng:
+                    set_value(
+                        output,
+                        i,
+                        j,
+                        k,
+                        buf[i - i_rng.start, k - k_rng.start],
+                    )
 
     return _send_recv
 
@@ -55,113 +82,41 @@ def make_send_recv(jit_flags, fill_buf):
 @lru_cache()
 def _make_scalar_periodic(indexers, jit_flags, dimension_index, size):
     @numba.njit(**jit_flags)
-    def fill_buf(buf, psi, i_rng, j_rng, k_rng, sign, _dim):
+    def fill_buf(buf, psi, i_rng, k_rng, sign, _dim):
         for i in i_rng:
-            for j in j_rng:
-                for k in k_rng:
-                    focus = (i, j, k)
-                    buf[i - i_rng.start, j - j_rng.start, k - k_rng.start] = indexers.ats[dimension_index](
-                        focus, psi, sign
-                    )
+            for k in k_rng:
+                buf[i - i_rng.start, k - k_rng.start] = indexers.ats[dimension_index](
+                    (i, INVALID_INDEX, k), psi, sign  # TODO: * halo ?
+                )
 
-    send_recv = make_send_recv(jit_flags, fill_buf)
+    send_recv = make_send_recv(indexers.set, jit_flags, fill_buf)
 
     @numba.njit(**jit_flags)
-    def fill_halos(i_rng, j_rng, k_rng, psi, span, sign):
-        j_rng = range(j_rng[0], j_rng[0] + 1)
-        # addressing
-        rank = mpi.rank()
-        peers = (-1, (rank - 1) % size, (rank + 1) % size)  # LEFT  # RIGHT
-
-        # allocating (TODO: should not be here!)
-        buf = np.empty(
-            (
-                len(i_rng),
-                len(j_rng),
-                len(k_rng),
-            )
-        )
-
-        # sending/receiving
-        send_recv(peers, buf, psi, i_rng, j_rng, k_rng, sign, -1)
-
-        # writing
-        for i in i_rng:
-            for j in j_rng:
-                for k in k_rng:
-                    indexers.set(
-                        psi,
-                        i,
-                        j,
-                        k,
-                        buf[i - i_rng.start, j - j_rng.start, k - k_rng.start],
-                    )
+    def fill_halos(i_rng, j_rng, k_rng, psi, _, sign):
+        send_recv(size, psi, i_rng, j_rng, k_rng, sign, IRRELEVANT, psi)
 
     return fill_halos
 
 
 @lru_cache()
-def _make_vector_periodic(indexers, jit_flags, dimension_index, size):
+def _make_vector_periodic(indexers, halo, jit_flags, dimension_index, size):
     @numba.njit(**jit_flags)
-    def fill_buf(buf, components, i_rng, j_rng, k_rng, sign, dim):
+    def fill_buf(buf, components, i_rng, k_rng, sign, dim):
         parallel = dim % len(components) == dimension_index
         assert not parallel
 
         for i in i_rng:
-            for j in j_rng:
-                for k in k_rng:
-                    focus = (i, j, k)
-                    if sign == SIGN_LEFT:
-                        if dimension_index == 0:
-                            # print(components[2].shape, i+1, k)
-                            value = components[2][i+1, k]
-                        else:
-                            # print(components[2].shape, i, k+1)
-                            value = components[0][i, k+1]
-                        #value = indexers.atv[dimension_index](focus, components, 0, .5)
-                    else:
-                        if dimension_index == 0:
-                            value = components[2][i-1, k]
-                        else:
-                            value = components[0][i, k-1]
-                        # value = indexers.atv[dimension_index](focus, components, 0, -1.5)
-                    buf[i - i_rng.start, j - j_rng.start, k - k_rng.start] = value
-        #fprint(f"  rank={mpi.rank()} with sign={sign} is sending buf={buf}")
+            for k in k_rng:
+                buf[i - i_rng.start, k - k_rng.start] = indexers.atv[dimension_index](
+                    (i, INVALID_INDEX, k), components, sign  # TODO: * halo ?
+                )
 
-    send_recv = make_send_recv(jit_flags, fill_buf)
+    send_recv = make_send_recv(indexers.set, jit_flags, fill_buf)
 
     @numba.njit(**jit_flags)
-    def fill_halos_loop_vector(i_rng, j_rng, k_rng, components, dim, span, sign):
-        # in 2D, j_rng is just a dummy "-44" - TODO
-        j_rng = range(j_rng[0], j_rng[0] + 1)
-
-        buf = np.empty(
-            (
-                len(i_rng),
-                len(j_rng),
-                len(k_rng),
-            )
-        )
-        if buf.size == 0:
+    def fill_halos_loop_vector(i_rng, j_rng, k_rng, components, dim, _, sign):
+        if i_rng.start == i_rng.stop or k_rng.start == k_rng.stop:
             return
+        send_recv(size, components, i_rng, j_rng, k_rng, sign, dim, components[dim])
 
-        # addressing
-        rank = mpi.rank()
-        peers = (-1, (rank - 1) % size, (rank + 1) % size)  # LEFT  # RIGHT
-
-        # send/receive
-        send_recv(peers, buf, components, i_rng, j_rng, k_rng, sign, dim)
-
-        #print(f"rank {mpi.rank()} buf_after send/recv {buf}")
-        for i in i_rng:
-            for j in j_rng:
-                for k in k_rng:
-                    value = buf[i - i_rng.start, j - j_rng.start, k - k_rng.start]
-                    indexers.set(
-                        components[dim],
-                        i,
-                        j,
-                        k,
-                        value,
-                    )
     return fill_halos_loop_vector

@@ -21,8 +21,6 @@ assert hasattr(mpi_tmp_path, "_pytestfixturefunction")
 
 
 class ReadmeSettings(Settings):
-    courant_field = 0.5, 0.25  # TODO: parametrize
-
     def __init__(self, output_seps):
         self.output_steps = output_seps
 
@@ -58,11 +56,26 @@ class ReadmeSettings(Settings):
         return cbar.norm
 
 
-@pytest.mark.parametrize("n_iters", (2,))  # TODO: 2+
+@pytest.mark.parametrize("n_iters", (1, 2, 3))
 @pytest.mark.parametrize("n_threads", (1,))  # TODO: 2+
 @pytest.mark.parametrize("output_steps", ((0,), (0, 1)))
+@pytest.mark.parametrize(
+    "courant_field",
+    (
+        (0.5, 0.25),
+        (-0.5, 0.25),
+        (0.5, -0.25),
+        (-0.5, -0.25),
+    ),
+)
 def test_2d(
-    mpi_tmp_path, n_iters, n_threads, output_steps, grid=(24, 24), plot=False
+    mpi_tmp_path,
+    n_iters,
+    n_threads,
+    output_steps,
+    courant_field,
+    grid=(24, 24),
+    plot=False,
 ):  # pylint: disable=redefined-outer-name
     paths = {
         mpi_max_size: Path(mpi_tmp_path)
@@ -96,7 +109,7 @@ def test_2d(
                     rank=rank,
                     size=truncated_size,
                     initial_condition=settings.initial_condition,
-                    courant_field=settings.courant_field,
+                    courant_field=courant_field,
                 )
                 steps_done = 0
                 for i, output_step in enumerate(settings.output_steps):
