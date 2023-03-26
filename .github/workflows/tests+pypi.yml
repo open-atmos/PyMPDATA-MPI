@@ -1,4 +1,4 @@
-name: tests
+name: tests+pypi
 
 defaults:
   run:
@@ -71,14 +71,16 @@ jobs:
         run: |
           pylint --unsafe-load-any-extension=y --disable=fixme $(git ls-files '*.py')
 
-  build:
+  tests:
     needs: [pylint, pdoc, precommit]
     strategy:
       matrix:
         platform: [ubuntu-latest, macos-latest]
         python-version: ["3.10"]
+        disable-jit: [1, 0]
+        mpi-np: [1, 2, 3]
     runs-on: ${{ matrix.platform }}
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v1
@@ -96,18 +98,10 @@ jobs:
       - run: pip install -e .
       - run: python -We -c "import PySuperDropletLES"
       - run: pip install pytest
-      - run: |
-          for disable_jit in 1 0; do
-            for np in 1 2 3; do
-              echo "################################################################################"
-              echo "############################ disable_jit:$disable_jit ########### np:$np ####################";
-              echo "################################################################################"
-              NUMBA_DISABLE_JIT=$disable_jit mpiexec --oversubscribe -n $np pytest -s -vv -We;
-            done;
-          done;
+      - run: NUMBA_DISABLE_JIT=${{ matrix.disable-jit }} mpiexec --oversubscribe -n ${{ matrix.mpi-np }} pytest -s -vv -We;
   dist:
     runs-on: ubuntu-latest
-    needs: [build]
+    needs: [tests]
     steps:
       - uses: actions/checkout@v2
         with:
