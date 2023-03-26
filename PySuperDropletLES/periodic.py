@@ -42,7 +42,7 @@ class MPIPeriodic:
         )
 
 
-def make_send_recv(set_value, jit_flags, fill_buf):
+def _make_send_recv(set_value, jit_flags, fill_buf):
     @numba.njit(**jit_flags)
     def _send_recv(size, psi, i_rng, j_rng, k_rng, sign, dim, output):
         buf = np.empty(
@@ -89,7 +89,7 @@ def _make_scalar_periodic(indexers, jit_flags, dimension_index, size):
                     (i, INVALID_INDEX, k), psi, sign  # TODO: * halo ?
                 )
 
-    send_recv = make_send_recv(indexers.set, jit_flags, fill_buf)
+    send_recv = _make_send_recv(indexers.set, jit_flags, fill_buf)
 
     @numba.njit(**jit_flags)
     def fill_halos(i_rng, j_rng, k_rng, psi, _, sign):
@@ -111,7 +111,7 @@ def _make_vector_periodic(indexers, halo, jit_flags, dimension_index, size):
                     (i, INVALID_INDEX, k), components, sign  # TODO: * halo ?
                 )
 
-    send_recv = make_send_recv(indexers.set, jit_flags, fill_buf)
+    send_recv = _make_send_recv(indexers.set, jit_flags, fill_buf)
 
     @numba.njit(**jit_flags)
     def fill_halos_loop_vector(i_rng, j_rng, k_rng, components, dim, _, sign):
