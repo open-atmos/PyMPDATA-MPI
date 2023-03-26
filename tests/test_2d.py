@@ -132,6 +132,7 @@ def test_2d(
             if plot:
                 plot_path = f"n_iters={n_iters}_threads_{n_threads}.pdf"
                 pyplot.savefig(Path(mpi_tmp_path) / plot_path)
+            pyplot.close()
             np.testing.assert_array_equal(
                 storage_expected[dataset_name][:, :, -1],
                 storage_actual[dataset_name][:, :, -1],
