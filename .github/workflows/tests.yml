@@ -1,4 +1,4 @@
-name: main
+name: tests
 
 defaults:
   run:
@@ -78,6 +78,7 @@ jobs:
         platform: [ubuntu-latest, macos-latest]
         python-version: ["3.10"]
     runs-on: ${{ matrix.platform }}
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v1
@@ -96,10 +97,12 @@ jobs:
       - run: python -We -c "import PySuperDropletLES"
       - run: pip install pytest
       - run: |
-          for np in 1 2 3; do
-            mpiexec --oversubscribe -n $np pytest -p no:unraisableexception -We;
+          for disable_jit in 1 0; do
+            for np in 1 2 3; do
+              echo "======= disable_jit:$disable_jit ======= np:$np =======";
+              NUMBA_DISABLE_JIT=$disable_jit mpiexec --oversubscribe -n $np pytest -We;
+            done;
           done;
-
   dist:
     runs-on: ubuntu-latest
     needs: [build]
