@@ -9,6 +9,7 @@ import numba_mpi as mpi
 import numpy as np
 import pytest
 from matplotlib import pyplot
+from PyMPDATA import Options
 
 from PySuperDropletLES.domain_decomposition import subdomain
 from PySuperDropletLES.hdf_storage import HDFStorage
@@ -56,7 +57,15 @@ class ReadmeSettings(Settings):
         return cbar.norm
 
 
-@pytest.mark.parametrize("n_iters", (1, 2, 3))
+@pytest.mark.parametrize(
+    "options_kwargs",
+    (
+        {"n_iters": 1},
+        {"n_iters": 2},
+        # {'n_iters': 2, 'nonoscillatory': True},  # TODO
+        {"n_iters": 3},
+    ),
+)
 @pytest.mark.parametrize("n_threads", (1,))  # TODO: 2+
 @pytest.mark.parametrize("output_steps", ((0,), (0, 1)))
 @pytest.mark.parametrize(
@@ -70,16 +79,24 @@ class ReadmeSettings(Settings):
 )
 def test_2d(
     mpi_tmp_path,
-    n_iters,
+    options_kwargs,
     n_threads,
     output_steps,
     courant_field,
     grid=(24, 24),
     plot=False,
 ):  # pylint: disable=redefined-outer-name
+    options_str = (
+        str(options_kwargs)
+        .replace(", ", "_")
+        .replace(": ", ":")
+        .replace("'", "")
+        .replace("{", "")
+        .replace("}", "")
+    )
     paths = {
         mpi_max_size: Path(mpi_tmp_path)
-        / f"n_iters={n_iters}_mpi_max_size_{mpi_max_size}_n_threads_{n_threads}.hdf5"
+        / f"options={options_str}_mpi_max_size_{mpi_max_size}_n_threads_{n_threads}.hdf5"
         for mpi_max_size in (range(1, mpi.size() + 1))
     }
 
@@ -103,7 +120,7 @@ def test_2d(
             dataset = storage[dataset_name]
             if rank < truncated_size:
                 simulation = Simulation(
-                    n_iters=n_iters,
+                    mpdata_options=Options(**options_kwargs),
                     n_threads=n_threads,
                     grid=grid,
                     rank=rank,
@@ -130,7 +147,7 @@ def test_2d(
         ) as storage_actual:
             settings.quick_look(storage_actual[dataset_name][:, :, -1], zlim=(-1, 1))
             if plot:
-                plot_path = f"n_iters={n_iters}_threads_{n_threads}.pdf"
+                plot_path = f"options={options_str}_threads_{n_threads}.pdf"
                 pyplot.savefig(Path(mpi_tmp_path) / plot_path)
             pyplot.close()
             np.testing.assert_array_equal(

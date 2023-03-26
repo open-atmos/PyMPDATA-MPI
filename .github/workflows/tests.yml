@@ -99,8 +99,10 @@ jobs:
       - run: |
           for disable_jit in 1 0; do
             for np in 1 2 3; do
-              echo "======= disable_jit:$disable_jit ======= np:$np =======";
-              NUMBA_DISABLE_JIT=$disable_jit mpiexec --oversubscribe -n $np pytest -We;
+              echo "################################################################################"
+              echo "############################ disable_jit:$disable_jit ########### np:$np ####################";
+              echo "################################################################################"
+              NUMBA_DISABLE_JIT=$disable_jit mpiexec --oversubscribe -n $np pytest -s -vv -We;
             done;
           done;
   dist:
