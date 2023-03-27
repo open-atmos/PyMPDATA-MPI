@@ -89,10 +89,6 @@ jobs:
           - platform: macos-latest
             mpi: mpich
 
-          # as of time of writing, h5py installation fails with "Unable to load dependency HDF5..."
-          - platform: macos-latest
-            mpi: openmpi
-
       fail-fast: false
     runs-on: ${{ matrix.platform }}
     timeout-minutes: 30
@@ -109,10 +105,10 @@ jobs:
       - if: startsWith(matrix.platform, 'ubuntu-')
         run: |
              sudo apt-get update && sudo apt-get install -y libhdf5-mpi$_ch-dev pkg-config
+      - if: startsWith(matrix.platform, 'macos-') && matrix.mpi == 'mpich'
+        run: brew unlink mpich
       - if: startsWith(matrix.platform, 'macos-')
-        run: |
-             brew unlink mpich && brew install hdf5-mpi 
-             echo HDF5_DIR=/opt/homebrew >> $GITHUB_ENV
+        run: brew install hdf5-mpi && echo HDF5_DIR=/opt/homebrew >> $GITHUB_ENV
       - run: HDF5_MPI="ON" CC=mpicc pip install --no-binary=h5py "git+https://github.com/h5py/h5py@81f6c01#egg=h5py"
       - run: pip install -e .
       - run: python -We -c "import PySuperDropletLES"
