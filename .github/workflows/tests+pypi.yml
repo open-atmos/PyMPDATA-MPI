@@ -85,6 +85,10 @@ jobs:
           - platform: macos-latest
             mpi: intelmpi
 
+          # issues with: *** The MPI_Comm_rank() function was called before MPI_INIT was invoked.
+          - platform: ubuntu-latest
+            mpi: intelmpi
+
           # https://github.com/Homebrew/homebrew-core/issues/26974
           - platform: macos-latest
             mpi: mpich
