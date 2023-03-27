@@ -104,7 +104,7 @@ jobs:
         run: echo _ch="ch" >> $GITHUB_ENV
       - if: startsWith(matrix.platform, 'ubuntu-')
         run: sudo apt-get update && sudo apt-get install -y libhdf5-mpi$_ch-dev pkg-config
-      - if: startsWith(matrix.platform, 'ubuntu-') && matrix.mpi == "mpich"
+      - if: startsWith(matrix.platform, 'ubuntu-') && matrix.mpi == 'mpich'
         run: |
           echo HDF5_LIBDIR=/usr/lib/x86_64-linux-gnu/hdf5/mpich
           echo HDF5_INCLUDEDIR=/usr/include/hdf5/mpich/
