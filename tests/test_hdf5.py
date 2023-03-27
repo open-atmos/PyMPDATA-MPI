@@ -12,23 +12,22 @@ from .fixtures import mpi_tmp_path
 assert hasattr(mpi_tmp_path, "_pytestfixturefunction")
 
 
-RANK = mpi.rank()
-
-
 @numba.njit()
 def step(dset):
-    dset[RANK] = RANK
+    rank = mpi.rank()
+    dset[rank] = rank
 
 
 def test_hdf5(mpi_tmp_path):  # pylint: disable=redefined-outer-name
     path = Path(mpi_tmp_path) / "parallel_test.hdf5"
+    rank = mpi.rank()
 
     with h5py.File(path, "w", driver="mpio", comm=MPI.COMM_WORLD) as file:
         dset = file.create_dataset("test", (mpi.size(),), dtype="i")
 
         tmp = dset[:]
         step(tmp)
-        dset[RANK] = tmp[RANK]
+        dset[rank] = tmp[rank]
 
     mpi.barrier()
 
