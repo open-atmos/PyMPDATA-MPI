@@ -1,9 +1,6 @@
 # pylint: disable=missing-module-docstring,missing-function-docstring
 
-import mpi4py
-import numba_mpi
 
-
+# pylint: disable=unused-argument,unused-import,import-outside-toplevel
 def pytest_sessionstart(session):
-    if not numba_mpi.initialized():
-        mpi4py.MPI.Init()
+    from mpi4py import MPI
