@@ -24,7 +24,8 @@ dependencies = [
     "PySDM",
     "PyMPDATA>=1.0.10",
     "mpi4py",
-    "h5py"
+    "h5py",
+    "pytest-mpi"
 ]
 dynamic = ["version"]
 
