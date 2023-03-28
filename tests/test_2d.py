@@ -2,8 +2,6 @@
 # pylint: disable=missing-class-docstring,invalid-name,too-many-locals,too-many-arguments,c-extension-no-member
 # based on PyMPDATA README example
 
-from pathlib import Path
-
 import mpi4py
 import numba_mpi as mpi
 import numpy as np
@@ -16,9 +14,7 @@ from PySuperDropletLES.hdf_storage import HDFStorage
 from PySuperDropletLES.settings import Settings
 from PySuperDropletLES.simulation import Simulation
 
-from .fixtures import mpi_tmp_path
-
-assert hasattr(mpi_tmp_path, "_pytestfixturefunction")
+from .utils import barrier_enclosed
 
 
 class ReadmeSettings(Settings):
@@ -95,7 +91,7 @@ def test_2d(
         .replace("}", "")
     )
     paths = {
-        mpi_max_size: Path(mpi_tmp_path)
+        mpi_max_size: mpi_tmp_path
         / f"{options_str}_mpi_max_size_{mpi_max_size}_n_threads_{n_threads}.hdf5"
         for mpi_max_size in (range(1, mpi.size() + 1))
     }
@@ -137,24 +133,21 @@ def test_2d(
                     x_range = slice(*subdomain(grid[0], rank, truncated_size))
                     dataset[x_range, :, i] = simulation.advectee.get()
 
-    # so that all results are stored in the file
-    mpi.barrier()
-
-    if mpi.rank() != 0:
-        with Storage.non_mpi_contex(
-            paths[1], "r"
-        ) as storage_expected, Storage.non_mpi_contex(
-            paths[mpi.rank() + 1], "r"
-        ) as storage_actual:
-            settings.quick_look(storage_actual[dataset_name][:, :, -1], zlim=(-1, 1))
-            if plot:
-                plot_path = f"{options_str}_threads_{n_threads}.pdf"
-                pyplot.savefig(Path(mpi_tmp_path) / plot_path)
-            pyplot.close()
-            np.testing.assert_array_equal(
-                storage_expected[dataset_name][:, :, -1],
-                storage_actual[dataset_name][:, :, -1],
-            )
-
-    # so that the file remains undeleted
-    mpi.barrier()
+    with barrier_enclosed():
+        if mpi.rank() != 0:
+            with Storage.non_mpi_contex(
+                paths[1], "r"
+            ) as storage_expected, Storage.non_mpi_contex(
+                paths[mpi.rank() + 1], "r"
+            ) as storage_actual:
+                settings.quick_look(
+                    storage_actual[dataset_name][:, :, -1], zlim=(-1, 1)
+                )
+                if plot:
+                    plot_path = f"{options_str}_threads_{n_threads}.pdf"
+                    pyplot.savefig(mpi_tmp_path / plot_path)
+                pyplot.close()
+                np.testing.assert_array_equal(
+                    storage_expected[dataset_name][:, :, -1],
+                    storage_actual[dataset_name][:, :, -1],
+                )
