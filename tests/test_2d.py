@@ -137,6 +137,7 @@ def test_2d(
                     x_range = slice(*subdomain(grid[0], rank, truncated_size))
                     dataset[x_range, :, i] = simulation.advectee.get()
 
+    # so that all results are stored in the file
     mpi.barrier()
 
     if mpi.rank() != 0:
@@ -154,3 +155,6 @@ def test_2d(
                 storage_expected[dataset_name][:, :, -1],
                 storage_actual[dataset_name][:, :, -1],
             )
+
+    # so that the file remains undeleted
+    mpi.barrier()
