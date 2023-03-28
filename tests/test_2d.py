@@ -114,6 +114,7 @@ def test_2d(
             path, "r+", mpi4py.MPI.COMM_WORLD.Split(rank < truncated_size, rank)
         ) as storage:
             dataset = storage[dataset_name]
+            mpi.barrier()
             if rank < truncated_size:
                 simulation = Simulation(
                     mpdata_options=Options(**options_kwargs),
