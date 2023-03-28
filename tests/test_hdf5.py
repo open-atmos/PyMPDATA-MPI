@@ -14,8 +14,8 @@ def step(dset):
     dset[rank] = rank
 
 
-def test_hdf5(mpi_tmp_path):  # pylint: disable=redefined-outer-name
-    path = mpi_tmp_path / "parallel_test.hdf5"
+def test_hdf5(mpi_tmp_path_fixed):  # pylint: disable=redefined-outer-name
+    path = mpi_tmp_path_fixed / "parallel_test.hdf5"
     rank = mpi.rank()
 
     with h5py.File(path, "w", driver="mpio", comm=MPI.COMM_WORLD) as file:

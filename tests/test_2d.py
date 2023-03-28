@@ -74,7 +74,7 @@ class ReadmeSettings(Settings):
     ),
 )
 def test_2d(
-    mpi_tmp_path,
+    mpi_tmp_path_fixed,
     options_kwargs,
     n_threads,
     output_steps,
@@ -91,7 +91,7 @@ def test_2d(
         .replace("}", "")
     )
     paths = {
-        mpi_max_size: mpi_tmp_path
+        mpi_max_size: mpi_tmp_path_fixed
         / f"{options_str}_mpi_max_size_{mpi_max_size}_n_threads_{n_threads}.hdf5"
         for mpi_max_size in (range(1, mpi.size() + 1))
     }
@@ -146,7 +146,7 @@ def test_2d(
                 )
                 if plot:
                     plot_path = f"{options_str}_threads_{n_threads}.pdf"
-                    pyplot.savefig(mpi_tmp_path / plot_path)
+                    pyplot.savefig(mpi_tmp_path_fixed / plot_path)
                 pyplot.close()
                 np.testing.assert_array_equal(
                     storage_expected[dataset_name][:, :, -1],
