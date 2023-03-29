@@ -97,6 +97,9 @@ jobs:
           - platform: macos-latest
             disable-jit: 1
             mpi-np: 3
+          - platform: macos-latest
+            disable-jit: 1
+            mpi-np: 4
 
       fail-fast: false
     runs-on: ${{ matrix.platform }}
