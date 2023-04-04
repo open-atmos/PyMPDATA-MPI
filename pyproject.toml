@@ -20,11 +20,7 @@ classifiers = [
         "Topic :: Scientific/Engineering :: Physics"
 ]
 dependencies = [
-<<<<<<< HEAD
     "numba_mpi>=0.30",
-=======
-    "numba_mpi>=0.26",
->>>>>>> 74b1b58 (specify PySDM version range)
     "PySDM<=2.16",
     "PyMPDATA>=1.0.10",
     "mpi4py",
