@@ -43,13 +43,13 @@ jobs:
         run: |
           pip install pdoc3
           pip install -e .
-          python -We -m pdoc --html PySuperDropletLES
+          python -We -m pdoc --html PyMPDATA_MPI
       - name: Deploy
         if: github.ref == 'refs/heads/main'
         uses: JamesIves/github-pages-deploy-action@4.1.1
         with:
           BRANCH: pdoc
-          FOLDER: html/PySuperDropletLES
+          FOLDER: html/PyMPDATA-MPI
           CLEAN: true
 
   pylint:
