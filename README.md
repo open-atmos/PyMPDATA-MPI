@@ -31,7 +31,8 @@ licence: [GPL v3](https://www.gnu.org/licenses/gpl-3.0.html)
 
 ## Design goals
 
-- MPI support for PyMPDATA implemented externally (i.e., within PyMPDATA-MPI)
+- MPI support for PyMPDATA implemented externally (i.e., within PySuperDropletLES)
+- hybrid threading (internal in PyMPDATA, in the inner dimension) + MPI (outer dimension) parallelisation
 - portability across major OSes (currently Linux & macOS; no Windows support due [challenges in getting HDF5/MPI-IO to work there](https://docs.h5py.org/en/stable/build.html#source-installation-on-windows))
 
 ## Related resources
