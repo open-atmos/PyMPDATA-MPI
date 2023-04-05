@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.10.0" />
-<title>PySuperDropletLES.periodic API documentation</title>
+<title>PyMPDATA_MPI.periodic API documentation</title>
 <meta name="description" content="periodic/cyclic boundary condition logic" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
@@ -19,7 +19,7 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>PySuperDropletLES.periodic</code></h1>
+<h1 class="title">Module <code>PyMPDATA_MPI.periodic</code></h1>
 </header>
 <section id="section-intro">
 <p>periodic/cyclic boundary condition logic</p>
@@ -167,7 +167,7 @@ def _make_vector_periodic(indexers, halo, jit_flags, dimension_index, size):
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt id="PySuperDropletLES.periodic.MPIPeriodic"><code class="flex name class">
+<dt id="PyMPDATA_MPI.periodic.MPIPeriodic"><code class="flex name class">
 <span>class <span class="ident">MPIPeriodic</span></span>
 <span>(</span><span>size)</span>
 </code></dt>
@@ -209,7 +209,7 @@ def _make_vector_periodic(indexers, halo, jit_flags, dimension_index, size):
 </details>
 <h3>Methods</h3>
 <dl>
-<dt id="PySuperDropletLES.periodic.MPIPeriodic.make_scalar"><code class="name flex">
+<dt id="PyMPDATA_MPI.periodic.MPIPeriodic.make_scalar"><code class="name flex">
 <span>def <span class="ident">make_scalar</span></span>(<span>self, indexers, halo, dtype, jit_flags, dimension_index)</span>
 </code></dt>
 <dd>
@@ -227,7 +227,7 @@ def _make_vector_periodic(indexers, halo, jit_flags, dimension_index, size):
     return _make_scalar_periodic(indexers, jit_flags, dimension_index, self.__size)</code></pre>
 </details>
 </dd>
-<dt id="PySuperDropletLES.periodic.MPIPeriodic.make_vector"><code class="name flex">
+<dt id="PyMPDATA_MPI.periodic.MPIPeriodic.make_vector"><code class="name flex">
 <span>def <span class="ident">make_vector</span></span>(<span>self, indexers, halo, dtype, jit_flags, dimension_index)</span>
 </code></dt>
 <dd>
@@ -260,16 +260,16 @@ def _make_vector_periodic(indexers, halo, jit_flags, dimension_index, size):
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="PySuperDropletLES" href="index.html">PySuperDropletLES</a></code></li>
+<li><code><a title="PyMPDATA_MPI" href="index.html">PyMPDATA_MPI</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
-<h4><code><a title="PySuperDropletLES.periodic.MPIPeriodic" href="#PySuperDropletLES.periodic.MPIPeriodic">MPIPeriodic</a></code></h4>
+<h4><code><a title="PyMPDATA_MPI.periodic.MPIPeriodic" href="#PyMPDATA_MPI.periodic.MPIPeriodic">MPIPeriodic</a></code></h4>
 <ul class="">
-<li><code><a title="PySuperDropletLES.periodic.MPIPeriodic.make_scalar" href="#PySuperDropletLES.periodic.MPIPeriodic.make_scalar">make_scalar</a></code></li>
-<li><code><a title="PySuperDropletLES.periodic.MPIPeriodic.make_vector" href="#PySuperDropletLES.periodic.MPIPeriodic.make_vector">make_vector</a></code></li>
+<li><code><a title="PyMPDATA_MPI.periodic.MPIPeriodic.make_scalar" href="#PyMPDATA_MPI.periodic.MPIPeriodic.make_scalar">make_scalar</a></code></li>
+<li><code><a title="PyMPDATA_MPI.periodic.MPIPeriodic.make_vector" href="#PyMPDATA_MPI.periodic.MPIPeriodic.make_vector">make_vector</a></code></li>
 </ul>
 </li>
 </ul>
