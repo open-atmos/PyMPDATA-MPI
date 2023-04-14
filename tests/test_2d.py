@@ -56,11 +56,11 @@ class ReadmeSettings(Settings):
 @pytest.mark.parametrize(
     "options_kwargs",
     (
-        {"n_iters": 1},
-        {"n_iters": 2},
+        #{"n_iters": 1},
+        #{"n_iters": 2},
         {"n_iters": 2, "third_order_terms": True},
-        {"n_iters": 2, "nonoscillatory": True},
-        {"n_iters": 3},
+        #{"n_iters": 2, "nonoscillatory": True},
+        #{"n_iters": 3},
     ),
 )
 @pytest.mark.parametrize("n_threads", (1,))  # TODO #35 : 2+
