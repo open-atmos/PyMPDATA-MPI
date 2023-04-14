@@ -15,55 +15,8 @@ from PyMPDATA import Options
 
 from PyMPDATA_MPI.domain_decomposition import subdomain
 from PyMPDATA_MPI.hdf_storage import HDFStorage
-from PyMPDATA_MPI.settings import Settings
-from PyMPDATA_MPI.simulation import Simulation
-
-from .utils import barrier_enclosed, setup_dataset_and_sync_all_workers
-
-
-class ReadmeSettings(Settings):
-    def __init__(self, output_seps):
-        self.output_steps = output_seps
-
-    @staticmethod
-    def initial_condition(xi, yi, grid):
-        nx, ny = grid
-        x0 = nx / 2
-        y0 = ny / 2
-
-        psi = np.exp(
-            -((xi + 0.5 - x0) ** 2) / (2 * (nx / 10) ** 2)
-            - (yi + 0.5 - y0) ** 2 / (2 * (ny / 10) ** 2)
-        )
-        return psi
-
-    @staticmethod
-    def quick_look(psi, zlim, norm=None):
-        xi, yi = np.indices(psi.shape)
-        _, ax = pyplot.subplots(subplot_kw={"projection": "3d"})
-        pyplot.gca().plot_wireframe(xi + 0.5, yi + 0.5, psi, color="red", linewidth=0.5)
-        ax.set_zlim(zlim)
-        for axis in (ax.xaxis, ax.yaxis, ax.zaxis):
-            axis.pane.fill = False
-            axis.pane.set_edgecolor("black")
-            axis.pane.set_alpha(1)
-        ax.grid(False)
-        ax.set_zticks([])
-        ax.set_xlabel("x/dx")
-        ax.set_ylabel("y/dy")
-        ax.set_proj_type("ortho")
-        cnt = ax.contourf(
-            xi + 0.5,
-            yi + 0.5,
-            psi,
-            zdir="z",
-            offset=-1,
-            norm=norm,
-            levels=np.linspace(*zlim, 11),
-        )
-        cbar = pyplot.colorbar(cnt, pad=0.1, aspect=10, fraction=0.04)
-        return cbar.norm
-
+from PyMPDATA_MPI.utils import barrier_enclosed, setup_dataset_and_sync_all_workers
+from scenarios import CartesianScenario, SphericalScenario
 
 OPTIONS_KWARGS = (
     {"n_iters": 1},
@@ -72,7 +25,7 @@ OPTIONS_KWARGS = (
     {"n_iters": 3},
 )
 
-COURANT_FIELDS = (
+COURANT_FIELD_MULTIPLIER = (
     (0.5, 0.25),
     (-0.5, 0.25),
     (0.5, -0.25),
@@ -80,20 +33,28 @@ COURANT_FIELDS = (
 )
 
 
+@pytest.mark.parametrize("scenario_class", (CartesianScenario, SphericalScenario))
 @pytest.mark.parametrize("options_kwargs", OPTIONS_KWARGS)
 @pytest.mark.parametrize("n_threads", (1,))  # TODO #35 : 2+
-@pytest.mark.parametrize("courant_field", COURANT_FIELDS)
-def test_2d(
+@pytest.mark.parametrize("courant_field_multiplier", COURANT_FIELD_MULTIPLIER)
+def test_single_vs_multi_node(
+    scenario_class,
     mpi_tmp_path_fixed,
     options_kwargs,
     n_threads,
-    courant_field,
+    courant_field_multiplier,
     output_steps=range(0, 25, 2),
-    grid=(24, 24),
+    grid=(64, 32),
 ):  # pylint: disable=redefined-outer-name
-    plot = (
+    if scenario_class is SphericalScenario and options_kwargs["n_iters"] > 1:
+        pytest.skip("TODO #56")
+
+    if scenario_class is SphericalScenario and mpi.size() > 1:
+        pytest.skip("TODO #56")
+
+    plot = True or (
         "CI_PLOTS_PATH" in os.environ
-        and courant_field == COURANT_FIELDS[-1]
+        and courant_field_multiplier == COURANT_FIELD_MULTIPLIER[-1]
         and options_kwargs == OPTIONS_KWARGS[-1]
     )
 
@@ -115,15 +76,13 @@ def test_2d(
     Storage = HDFStorage
     dataset_name = "test"
 
-    settings = ReadmeSettings(output_steps)
-
     # act
     for mpi_max_size, path in paths.items():
         truncated_size = min(mpi_max_size, mpi.size())
         rank = mpi.rank()
 
         courant_str = (
-            str(courant_field)
+            str(courant_field_multiplier)
             .replace(" ", "")
             .replace(",", ".")
             .replace("(", ".")
@@ -140,7 +99,7 @@ def test_2d(
 
         if rank == 0:
             Storage.create_dataset(
-                name=dataset_name, path=path, grid=grid, steps=settings.output_steps
+                name=dataset_name, path=path, grid=grid, steps=output_steps
             )
 
         with Storage.mpi_context(
@@ -148,31 +107,25 @@ def test_2d(
         ) as storage:
             dataset = setup_dataset_and_sync_all_workers(storage, dataset_name)
             if rank < truncated_size:
-                simulation = Simulation(
+                simulation = scenario_class(
                     mpdata_options=Options(**options_kwargs),
                     n_threads=n_threads,
                     grid=grid,
                     rank=rank,
                     size=truncated_size,
-                    initial_condition=settings.initial_condition,
-                    courant_field=courant_field,
+                    courant_field_multiplier=courant_field_multiplier,
                 )
-                steps_done = 0
                 x_range = slice(*subdomain(grid[0], rank, truncated_size))
 
-                for i, output_step in enumerate(settings.output_steps):
-                    n_steps = output_step - steps_done
-                    simulation.advance(n_steps=n_steps)
-                    steps_done += n_steps
-                    dataset[x_range, :, i] = simulation.advectee.get()
+                simulation.advance(dataset, output_steps, x_range)
 
                 # plot
                 if plot:
                     tmp = np.empty_like(dataset[:, :, -1])
-                    for i, _ in enumerate(settings.output_steps):
+                    for i, _ in enumerate(output_steps):
                         tmp[:] = np.nan
                         tmp[x_range, :] = dataset[x_range, :, i]
-                        settings.quick_look(tmp, zlim=(-1, 1))
+                        simulation.quick_look(tmp)
                         filename = f"step={i:04d}.svg"
                         pyplot.savefig(plot_path / filename)
                         pyplot.close()
