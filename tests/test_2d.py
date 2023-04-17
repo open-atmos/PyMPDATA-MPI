@@ -70,7 +70,7 @@ class ReadmeSettings(Settings):
     "output_steps",
     (
         (0,),
-        (0, 1),
+        (0, 10),
     ),
 )
 @pytest.mark.parametrize(
@@ -91,6 +91,7 @@ def test_2d(
     grid=(24, 24),
     plot='CI' in os.environ,
 ):  # pylint: disable=redefined-outer-name
+    # arrange
     options_str = (
         str(options_kwargs)
         .replace(", ", "_")
@@ -110,6 +111,7 @@ def test_2d(
 
     settings = ReadmeSettings(output_steps)
 
+    # act
     for mpi_max_size, path in paths.items():
         truncated_size = min(mpi_max_size, mpi.size())
         rank = mpi.rank()
@@ -134,14 +136,24 @@ def test_2d(
                     courant_field=courant_field,
                 )
                 steps_done = 0
+                x_range = slice(*subdomain(grid[0], rank, truncated_size))
+
                 for i, output_step in enumerate(settings.output_steps):
                     n_steps = output_step - steps_done
                     simulation.advance(n_steps=n_steps)
                     steps_done += n_steps
-
-                    x_range = slice(*subdomain(grid[0], rank, truncated_size))
                     dataset[x_range, :, i] = simulation.advectee.get()
 
+                # plot
+                tmp = np.full_like(dataset[:,:,-1], np.nan)
+                tmp[x_range, :] = dataset[x_range, :, -1]
+                settings.quick_look(tmp, zlim=(-1, 1))
+                if plot:
+                    plot_path = f"{options_str}_threads_{n_threads}_courant_field_{courant_field}_mpirank_{mpi.rank()}.svg"
+                    pyplot.savefig(Path(os.environ['CI_PLOTS_PATH']) / plot_path)
+                pyplot.close()
+
+    # assert
     with barrier_enclosed():
         if mpi.rank() != 0:
             with Storage.non_mpi_contex(
@@ -149,13 +161,6 @@ def test_2d(
             ) as storage_expected, Storage.non_mpi_contex(
                 paths[mpi.rank() + 1], "r"
             ) as storage_actual:
-                settings.quick_look(
-                    storage_actual[dataset_name][:, :, -1], zlim=(-1, 1)
-                )
-                if plot:
-                    plot_path = f"{options_str}_threads_{n_threads}.svg"
-                    pyplot.savefig(Path(os.environ['CI_PLOTS_PATH']) / plot_path)
-                pyplot.close()
                 np.testing.assert_array_equal(
                     storage_expected[dataset_name][:, :, -1],
                     storage_actual[dataset_name][:, :, -1],
