@@ -2,6 +2,8 @@
 # pylint: disable=missing-class-docstring,invalid-name,too-many-locals,too-many-arguments,c-extension-no-member
 # based on PyMPDATA README example
 
+import os
+from pathlib import Path
 import mpi4py
 import numba_mpi as mpi
 import numpy as np
@@ -87,7 +89,7 @@ def test_2d(
     output_steps,
     courant_field,
     grid=(24, 24),
-    plot=False,
+    plot='CI' in os.environ,
 ):  # pylint: disable=redefined-outer-name
     options_str = (
         str(options_kwargs)
@@ -151,8 +153,8 @@ def test_2d(
                     storage_actual[dataset_name][:, :, -1], zlim=(-1, 1)
                 )
                 if plot:
-                    plot_path = f"{options_str}_threads_{n_threads}.pdf"
-                    pyplot.savefig(mpi_tmp_path_fixed / plot_path)
+                    plot_path = f"{options_str}_threads_{n_threads}.svg"
+                    pyplot.savefig(Path(os.environ['CI_PLOTS_PATH']) / plot_path)
                 pyplot.close()
                 np.testing.assert_array_equal(
                     storage_expected[dataset_name][:, :, -1],

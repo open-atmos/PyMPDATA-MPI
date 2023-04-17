@@ -120,7 +120,18 @@ jobs:
       - run: pip install pytest pytest-timeout pytest-mpi matplotlib
       - if: matrix.mpi == 'openmpi'
         run: echo _mpiexec_args="--oversubscribe" >> $GITHUB_ENV
-      - run: NUMBA_DISABLE_JIT=${{ matrix.disable-jit }} mpiexec $_mpiexec_args -n ${{ matrix.mpi-np }} pytest --timeout=600 --timeout_method=thread -s -vv -We;
+      - name: "mpiexec pytest"
+        env:
+          NUMBA_DISABLE_JIT: ${{ matrix.disable-jit }} 
+          CI_PLOTS_PATH: plots/${{ matrix.python-version }}/${{ matrix.platform }}/${{ matrix.disable-jit}}/${{ matrix.mpi }}/${{ matrix.mpi-np }}
+        run: |
+          mkdir -p $CI_PLOTS_PATH
+          mpiexec $_mpiexec_args -n ${{ matrix.mpi-np }} pytest --timeout=600 --timeout_method=thread -s -vv -We;
+      - uses: actions/upload-artifact@v2
+        with:
+          name: plots
+          path: plots
+
   dist:
     runs-on: ubuntu-latest
     needs: [tests]
@@ -150,4 +161,24 @@ jobs:
         uses: pypa/gh-action-pypi-publish@unstable/v1
         with:
           password: ${{ secrets.PYPI_API_TOKEN }}
+
+  tip-release-uploads:
+    runs-on: ubuntu-latest
+    needs: [tests]
+    steps:
+      - uses: actions/download-artifact@v2
+        with:
+          name: plots
+          path: plots
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v1
+        with:
+          python-version: "3.10"
+      - name: artefacts
+        if: github.ref == 'refs/heads/main'
+        uses: pyTooling/Actions/releaser@r0
+        tag: 'main-generated-plots'
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          files: plots/3.10/ubuntu-latest/mpich/0/*
 
