@@ -42,40 +42,13 @@ class MPIPeriodic:
             indexers, halo, jit_flags, dimension_index, self.__size
         )
 
-class BufferMPI:
-
-    buff = None
-
-    @staticmethod
-    def init():
-        BufferMPI.buff = np.empty(
-            30,
-            30
-        )
-    
-    @staticmethod
-    def getBuffer(len_i, len_k):
-        return BufferMPI.buff[:len_i, :len_k]
     
 def _make_send_recv(set_value, jit_flags, fill_buf):
-
-    buffer_float = np.empty((30, 30), dtype=np.float64)
-
     @numba.njit(**jit_flags)
     def _send_recv(buffer, size, psi, i_rng, j_rng, k_rng, sign, dim, output):
-        # buf = BufferMPI.getBuffer(len(i_rng), len(k_rng))
-        #print("dtype: ", output.dtype)
+        buf = buffer[:len(i_rng) * len(k_rng)].view()
+        buf.shape = (len(i_rng), len(k_rng))
 
-        print("buffer: ", buffer.shape, buffer)
-        buf = buffer[:len(i_rng), 0, :len(k_rng)]
-        print("SHAPE: ", buf.shape)
-        # np.empty(
-        #     (
-        #         len(i_rng),
-        #         len(k_rng),
-        #     ),
-        #     dtype=output.dtype,
-        # )
         rank = mpi.rank()
         peers = (-1, (rank - 1) % size, (rank + 1) % size)  # LEFT  # RIGHT
 
