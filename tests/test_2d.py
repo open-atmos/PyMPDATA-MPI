@@ -4,6 +4,7 @@
 
 import os
 from pathlib import Path
+
 import mpi4py
 import numba_mpi as mpi
 import numpy as np
@@ -89,7 +90,7 @@ def test_2d(
     output_steps,
     courant_field,
     grid=(24, 24),
-    plot='CI' in os.environ,
+    plot="CI" in os.environ,
 ):  # pylint: disable=redefined-outer-name
     # arrange
     options_str = (
@@ -145,12 +146,12 @@ def test_2d(
                     dataset[x_range, :, i] = simulation.advectee.get()
 
                 # plot
-                tmp = np.full_like(dataset[:,:,-1], np.nan)
+                tmp = np.full_like(dataset[:, :, -1], np.nan)
                 tmp[x_range, :] = dataset[x_range, :, -1]
                 settings.quick_look(tmp, zlim=(-1, 1))
                 if plot:
-                    plot_path = f"{options_str}_threads_{n_threads}_courant_field_{courant_field}_mpirank_{mpi.rank()}.svg"
-                    pyplot.savefig(Path(os.environ['CI_PLOTS_PATH']) / plot_path)
+                    plot_path = f"{options_str}_c_field_{courant_field}_mpirank_{mpi.rank()}.svg"
+                    pyplot.savefig(Path(os.environ["CI_PLOTS_PATH"]) / plot_path)
                 pyplot.close()
 
     # assert
