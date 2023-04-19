@@ -148,7 +148,8 @@ def test_2d(
                 # plot
                 plot_path = Path(
                     os.environ["CI_PLOTS_PATH"]
-                    / f"{options_str}_rank_{mpi.rank()}_size_{mpi.size()}_c_field_{courant_field}"
+                ) / Path(
+                    f"{options_str}_rank_{mpi.rank()}_size_{mpi.size()}_c_field_{courant_field}"
                 )
                 tmp = np.empty_like(dataset[:, :, -1])
                 for i in enumerate(settings.output_steps):
