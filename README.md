@@ -28,28 +28,24 @@ It is done with the help of MPI(Message Passing Interface). Every worker is resp
 
 ### 1 worker
 <p align="middle">
-  <img src="resources/n_iters=1_mpisize_1_c_field_(-0.5,%20-0.25)_mpirank_0.svg" width="49%" /> 
+  <img src="rhttps://github.com/open-atmos/PyMPDATA-MPI/releases/download/latest-generated-plots/plots/3.10/ubuntu-latest/0/openmpi/n_iters=2_rank_0_size_1_c_field_(0.5, 0.25)/anim.gif" width="49%" /> 
 </p>
 
 ### 2 workers
 <p align="middle">
-  <img src="resources/n_iters=1_mpisize_2_c_field_(-0.5,%20-0.25)_mpirank_0.svg" width="49%" />
-  <img src="resources/n_iters=1_mpisize_2_c_field_(-0.5,%20-0.25)_mpirank_1.svg"  width="49%" /> 
+  <img src="https://github.com/open-atmos/PyMPDATA-MPI/releases/download/latest-generated-plots/plots/3.10/ubuntu-latest/0/openmpi/n_iters=2_rank_0_size_2_c_field_(0.5, 0.25)/anim.gif" width="49%" />
+  <img src="https://github.com/open-atmos/PyMPDATA-MPI/releases/download/latest-generated-plots/plots/3.10/ubuntu-latest/0/openmpi/n_iters=2_rank_1_size_2_c_field_(0.5, 0.25)/anim.gif"  width="49%" /> 
 </p>
 
 ### 3 workers
 <p align="middle">
-  <img src="resources/n_iters=1_c_field_(-0.5,%20-0.25)_mpirank_0.svg" width="32%" />
-  <img src="resources/n_iters=1_c_field_(-0.5,%20-0.25)_mpirank_1.svg"  width="32%" /> 
-  <img src="resources/n_iters=1_c_field_(-0.5,%20-0.25)_mpirank_2.svg"  width="32%" />
+  <img src="https://github.com/open-atmos/PyMPDATA-MPI/releases/download/latest-generated-plots/plots/3.10/ubuntu-latest/0/openmpi/n_iters=2_rank_0_size_3_c_field_(0.5, 0.25)/anim.gif" width="32%" />  <img src="https://github.com/open-atmos/PyMPDATA-MPI/releases/download/latest-generated-plots/plots/3.10/ubuntu-latest/0/openmpi/n_iters=2_rank_1_size_3_c_field_(0.5, 0.25)/anim.gif" width="32%" />  <img src="https://github.com/open-atmos/PyMPDATA-MPI/releases/download/latest-generated-plots/plots/3.10/ubuntu-latest/0/openmpi/n_iters=2_rank_2_size_3_c_field_(0.5, 0.25)/anim.gif" width="32%" />
 </p>
 
 ### 4 workers
 <p align="middle">
-  <img src="resources/n_iters=1_mpisize_4_c_field_(-0.5,%20-0.25)_mpirank_0.svg" width="24%" />
-  <img src="resources/n_iters=1_mpisize_4_c_field_(-0.5,%20-0.25)_mpirank_1.svg"  width="24%" /> 
-  <img src="resources/n_iters=1_mpisize_4_c_field_(-0.5,%20-0.25)_mpirank_2.svg"  width="24%" />
-  <img src="resources/n_iters=1_mpisize_4_c_field_(-0.5,%20-0.25)_mpirank_3.svg"  width="24%" />
+  <img src="https://github.com/open-atmos/PyMPDATA-MPI/releases/download/latest-generated-plots/plots/3.10/ubuntu-latest/0/openmpi/n_iters=2_rank_0_size_4_c_field_(0.5, 0.25)/anim.gif" width="24%" />
+  <img src="https://github.com/open-atmos/PyMPDATA-MPI/releases/download/latest-generated-plots/plots/3.10/ubuntu-latest/0/openmpi/n_iters=2_rank_1_size_4_c_field_(0.5, 0.25)/anim.gif" width="24%" />  <img src="https://github.com/open-atmos/PyMPDATA-MPI/releases/download/latest-generated-plots/plots/3.10/ubuntu-latest/0/openmpi/n_iters=2_rank_2_size_4_c_field_(0.5, 0.25)/anim.gif" width="24%" />  <img src="https://github.com/open-atmos/PyMPDATA-MPI/releases/download/latest-generated-plots/plots/3.10/ubuntu-latest/0/openmpi/n_iters=2_rank_3_size_4_c_field_(0.5, 0.25)/anim.gif" width="24%" />
 </p>
 
 ## Credits:

@@ -179,10 +179,10 @@ jobs:
               convert $path/*.svg $path/anim.gif 
           done;
       - name: artefacts
-        if: github.ref == 'refs/heads/main'
+        #if: github.ref == 'refs/heads/main' TODO: uncomment before merge!
         uses: pyTooling/Actions/releaser@r0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           files: ${{ matrix.arbitrarily_selected_artefact_set }}/*/*.gif
-          tag: 'main-generated-plots'
+          tag: 'latest-generated-plots'
 
