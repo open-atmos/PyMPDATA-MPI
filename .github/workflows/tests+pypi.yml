@@ -174,7 +174,7 @@ jobs:
           name: plots
           path: plots
       - run: |
-          apt-get install imagemagick
+          sudo apt-get install imagemagick
           for path in ${{ matrix.arbitrarily_selected_artefact_set }}/*; do
               convert $path/*.svg $path/anim.gif 
           done;
