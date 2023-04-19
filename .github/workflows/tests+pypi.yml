@@ -167,7 +167,7 @@ jobs:
     needs: [tests]
     strategy:
       matrix:
-        arbitrarily_selected_artefact_set: plots/3.10/ubuntu-latest/0/openmpi
+        arbitrarily_selected_artefact_set: ['plots/3.10/ubuntu-latest/0/openmpi']
     steps:
       - uses: actions/download-artifact@v2
         with:
