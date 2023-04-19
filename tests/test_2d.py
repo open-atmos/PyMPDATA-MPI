@@ -119,8 +119,9 @@ def test_2d(
         truncated_size = min(mpi_max_size, mpi.size())
         rank = mpi.rank()
 
+        courant_str = str(courant_field).replace(" ", "")
         plot_path = Path(os.environ["CI_PLOTS_PATH"]) / Path(
-            f"{options_str}_rank_{mpi.rank()}_size_{mpi.size()}_c_field_{courant_field}"
+            f"{options_str}_rank_{mpi.rank()}_size_{mpi.size()}_c_field_{courant_str}"
         )
         if plot:
             shutil.rmtree(plot_path, ignore_errors=True)
