@@ -52,7 +52,7 @@ class ReadmeSettings(Settings):
         ax.set_xlabel("x/dx")
         ax.set_ylabel("y/dy")
         ax.set_proj_type("ortho")
-        cnt = ax.contourf(xi + 0.5, yi + 0.5, psi, zdir="z", offset=-1, norm=norm, levels=np.linspace(*zlim, 5))
+        cnt = ax.contourf(xi + 0.5, yi + 0.5, psi, zdir="z", offset=-1, norm=norm, levels=np.linspace(*zlim, 11))
         cbar = pyplot.colorbar(cnt, pad=0.1, aspect=10, fraction=0.04)
         return cbar.norm
 
