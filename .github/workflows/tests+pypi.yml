@@ -174,8 +174,7 @@ jobs:
           name: plots
           path: plots
       - run: |
-          sudo apt-get install imagemagick
-          for path in ${{ matrix.arbitrarily_selected_artefact_set }}/*; do
+          for path in ${{ matrix.arbitrarily_selected_artefact_set }}/*/*; do
               convert $path/*.svg $path/anim.gif 
           done;
       - name: artefacts
@@ -183,6 +182,6 @@ jobs:
         uses: pyTooling/Actions/releaser@r0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          files: ${{ matrix.arbitrarily_selected_artefact_set }}/*/*.gif
+          files: ${{ matrix.arbitrarily_selected_artefact_set }}/*/*/*.gif
           tag: 'latest-generated-plots'
 
