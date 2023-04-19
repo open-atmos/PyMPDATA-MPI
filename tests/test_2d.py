@@ -6,6 +6,7 @@ import os
 from pathlib import Path
 
 import mpi4py
+import shutil
 import numba_mpi as mpi
 import numpy as np
 import pytest
@@ -68,13 +69,6 @@ class ReadmeSettings(Settings):
 )
 @pytest.mark.parametrize("n_threads", (1,))  # TODO #35 : 2+
 @pytest.mark.parametrize(
-    "output_steps",
-    (
-        (0,),
-        (0, 10),
-    ),
-)
-@pytest.mark.parametrize(
     "courant_field",
     (
         (0.5, 0.25),
@@ -87,8 +81,8 @@ def test_2d(
     mpi_tmp_path_fixed,
     options_kwargs,
     n_threads,
-    output_steps,
     courant_field,
+    output_steps=range(24),
     grid=(24, 24),
     plot="CI" in os.environ,
 ):  # pylint: disable=redefined-outer-name
@@ -151,8 +145,10 @@ def test_2d(
                 ) / Path(
                     f"{options_str}_rank_{mpi.rank()}_size_{mpi.size()}_c_field_{courant_field}"
                 )
+                os.mkdir(plot_path)
+
                 tmp = np.empty_like(dataset[:, :, -1])
-                for i in enumerate(settings.output_steps):
+                for i in settings.output_steps:
                     tmp[:] = np.nan
                     tmp[x_range, :] = dataset[x_range, :, i]
                     settings.quick_look(tmp, zlim=(-1, 1))
