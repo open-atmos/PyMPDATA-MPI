@@ -95,7 +95,7 @@ jobs:
 
       fail-fast: false
     runs-on: ${{ matrix.platform }}
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v1
@@ -165,20 +165,24 @@ jobs:
   tip-release-uploads:
     runs-on: ubuntu-latest
     needs: [tests]
+    strategy:
+      matrix:
+        arbitrarily_selected_artefact_set: plots/3.10/ubuntu-latest/0/openmpi
     steps:
       - uses: actions/download-artifact@v2
         with:
           name: plots
           path: plots
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v1
-        with:
-          python-version: "3.10"
+      - run: |
+          apt-get install imagemagick
+          for path in ${{ matrix.arbitrarily_selected_artefact_set }}/*; do
+              convert $path/*.svg $path/anim.gif 
+          done;
       - name: artefacts
         if: github.ref == 'refs/heads/main'
         uses: pyTooling/Actions/releaser@r0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          files: plots/3.10/ubuntu-latest/mpich/0/*
+          files: ${{ matrix.arbitrarily_selected_artefact_set }}/*/*.gif
           tag: 'main-generated-plots'
 

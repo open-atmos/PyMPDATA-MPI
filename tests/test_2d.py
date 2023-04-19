@@ -146,13 +146,20 @@ def test_2d(
                     dataset[x_range, :, i] = simulation.advectee.get()
 
                 # plot
-                tmp = np.full_like(dataset[:, :, -1], np.nan)
-                tmp[x_range, :] = dataset[x_range, :, -1]
-                settings.quick_look(tmp, zlim=(-1, 1))
-                if plot:
-                    plot_path = f"{options_str}_c_field_{courant_field}_mpirank_{mpi.rank()}.svg"
-                    pyplot.savefig(Path(os.environ["CI_PLOTS_PATH"]) / plot_path)
-                pyplot.close()
+                plot_path = Path(
+                    os.environ["CI_PLOTS_PATH"]
+                    / 
+                    f"{options_str}_mpisize_{mpi.size()}_c_field_{courant_field}_mpirank_{mpi.rank()}"
+                )
+                tmp = np.empty_like(dataset[:, :, -1])
+                for i in enumerate(settings.output_steps):
+                    tmp[:] = np.nan
+                    tmp[x_range, :] = dataset[x_range, :, i]
+                    settings.quick_look(tmp, zlim=(-1, 1))
+                    if plot:
+                        filename = f"step={i:04d}.svg"
+                        pyplot.savefig(plot_path / filename)
+                    pyplot.close()
 
     # assert
     with barrier_enclosed():

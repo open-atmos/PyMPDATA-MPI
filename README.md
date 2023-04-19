@@ -21,6 +21,37 @@
 [PyMPDATA](https://github.com/open-atmos/PyMPDATA) +
 [numba-mpi](https://github.com/numba-mpi/numba-mpi) coupler sandbox (with a long-term goal of developing a pure-Python LES system)
 
+In principle, PyMPDATA-MPI adapts to API of PyMPDATA to solve the following equation in an environment with multiple nodes:
+$$ \partial_t (G \psi) + \nabla \cdot (Gu \psi)= 0 $$
+
+It is done with the help of MPI(Message Passing Interface). Every worker is responsible for computing its part of the decomposed domain.
+
+### 1 worker
+<p align="middle">
+  <img src="resources/n_iters=1_mpisize_1_c_field_(-0.5,%20-0.25)_mpirank_0.svg" width="49%" /> 
+</p>
+
+### 2 workers
+<p align="middle">
+  <img src="resources/n_iters=1_mpisize_2_c_field_(-0.5,%20-0.25)_mpirank_0.svg" width="49%" />
+  <img src="resources/n_iters=1_mpisize_2_c_field_(-0.5,%20-0.25)_mpirank_1.svg"  width="49%" /> 
+</p>
+
+### 3 workers
+<p align="middle">
+  <img src="resources/n_iters=1_c_field_(-0.5,%20-0.25)_mpirank_0.svg" width="32%" />
+  <img src="resources/n_iters=1_c_field_(-0.5,%20-0.25)_mpirank_1.svg"  width="32%" /> 
+  <img src="resources/n_iters=1_c_field_(-0.5,%20-0.25)_mpirank_2.svg"  width="32%" />
+</p>
+
+### 4 workers
+<p align="middle">
+  <img src="resources/n_iters=1_mpisize_4_c_field_(-0.5,%20-0.25)_mpirank_0.svg" width="24%" />
+  <img src="resources/n_iters=1_mpisize_4_c_field_(-0.5,%20-0.25)_mpirank_1.svg"  width="24%" /> 
+  <img src="resources/n_iters=1_mpisize_4_c_field_(-0.5,%20-0.25)_mpirank_2.svg"  width="24%" />
+  <img src="resources/n_iters=1_mpisize_4_c_field_(-0.5,%20-0.25)_mpirank_3.svg"  width="24%" />
+</p>
+
 ## Credits:
 
 Development of PyMPDATA-MPI has been supported by the [Poland's National Science Centre](https://www.ncn.gov.pl/?language=en)  
