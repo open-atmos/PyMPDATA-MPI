@@ -4,6 +4,9 @@ defaults:
   run:
     shell: bash
 
+env:
+  arbitrarily_selected_artefact_set: '3.10/ubuntu-latest/0/openmpi'
+
 on:
   push:
     branches: [ main ]
@@ -123,9 +126,11 @@ jobs:
       - name: "mpiexec pytest"
         env:
           NUMBA_DISABLE_JIT: ${{ matrix.disable-jit }} 
-          CI_PLOTS_PATH: plots/${{ matrix.python-version }}/${{ matrix.platform }}/${{ matrix.disable-jit}}/${{ matrix.mpi }}/${{ matrix.mpi-np }}
         run: |
           mkdir -p $CI_PLOTS_PATH
+          if [ "$arbitrarily_selected_artefact_set" == "${{ matrix.python-version }}/${{ matrix.platform }}/${{ matrix.disable-jit}}/${{ matrix.mpi }}/${{ matrix.mpi-np }}" ]; then
+            export CI_PLOTS_PATH=plots/$arbitrarily_selected_artefact_set
+          fi
           mpiexec $_mpiexec_args -n ${{ matrix.mpi-np }} pytest --timeout=600 --timeout_method=thread -s -vv -We;
       - uses: actions/upload-artifact@v2
         with:
@@ -165,23 +170,20 @@ jobs:
   tip-release-uploads:
     runs-on: ubuntu-latest
     needs: [tests]
-    strategy:
-      matrix:
-        arbitrarily_selected_artefact_set: ['plots/3.10/ubuntu-latest/0/openmpi']
     steps:
       - uses: actions/download-artifact@v2
         with:
           name: plots
           path: plots
       - run: |
-          for path in ${{ matrix.arbitrarily_selected_artefact_set }}/*/*; do
+          for path in plots/${{ env.arbitrarily_selected_artefact_set }}/*/*; do
               convert $path/*.svg $path/anim.gif 
           done;
       - name: artefacts
-        #if: github.ref == 'refs/heads/main' TODO: uncomment before merge!
+        if: github.ref == 'refs/heads/main'
         uses: pyTooling/Actions/releaser@r0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          files: ${{ matrix.arbitrarily_selected_artefact_set }}/*/*/*.gif
+          files: plots/${{ matrix.arbitrarily_selected_artefact_set }}/*/*/*.gif
           tag: 'latest-generated-plots'
 

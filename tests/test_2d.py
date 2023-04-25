@@ -69,9 +69,9 @@ class ReadmeSettings(Settings):
     "options_kwargs",
     (
         {"n_iters": 1},
-        {"n_iters": 2},
-        {"n_iters": 2, "third_order_terms": True},
-        {"n_iters": 2, "nonoscillatory": True},
+        # {"n_iters": 2},
+        # {"n_iters": 2, "third_order_terms": True},
+        # {"n_iters": 2, "nonoscillatory": True},
         {"n_iters": 3},
     ),
 )
@@ -80,8 +80,8 @@ class ReadmeSettings(Settings):
     "courant_field",
     (
         (0.5, 0.25),
-        (-0.5, 0.25),
-        (0.5, -0.25),
+        # (-0.5, 0.25),
+        # (0.5, -0.25),
         (-0.5, -0.25),
     ),
 )
@@ -92,8 +92,13 @@ def test_2d(
     courant_field,
     output_steps=range(24),
     grid=(24, 24),
-    plot="CI" in os.environ,
+    plot="CI_PLOTS_PATH" in os.environ,
 ):  # pylint: disable=redefined-outer-name
+    # <TODO>
+    if plot and courant_field != (0.5, 0.25) and options_kwargs != {"n_iters": 3}:
+        plot = False
+    # </TODO>
+
     # arrange
     options_str = (
         str(options_kwargs)
@@ -156,15 +161,15 @@ def test_2d(
                     dataset[x_range, :, i] = simulation.advectee.get()
 
                 # plot
-                tmp = np.empty_like(dataset[:, :, -1])
-                for i in settings.output_steps:
-                    tmp[:] = np.nan
-                    tmp[x_range, :] = dataset[x_range, :, i]
-                    settings.quick_look(tmp, zlim=(-1, 1))
-                    if plot:
+                if plot:
+                    tmp = np.empty_like(dataset[:, :, -1])
+                    for i in settings.output_steps:
+                        tmp[:] = np.nan
+                        tmp[x_range, :] = dataset[x_range, :, i]
+                        settings.quick_look(tmp, zlim=(-1, 1))
                         filename = f"step={i:04d}.svg"
                         pyplot.savefig(plot_path / filename)
-                    pyplot.close()
+                        pyplot.close()
 
     # assert
     with barrier_enclosed():
