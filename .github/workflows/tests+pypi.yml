@@ -176,8 +176,10 @@ jobs:
           name: plots
           path: plots
       - run: |
+          sudo apt install -y librsvg2-bin
           for path in plots/${{ env.arbitrarily_selected_artefact_set }}/*; do
-              convert $path/*.svg $path/anim.gif 
+              for i in $path/*.svg; do rsvg-convert $i -o $i.png; done
+              convert $path/*.png $path/anim.gif 
           done;
 
       - uses: actions/upload-artifact@v2
