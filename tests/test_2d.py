@@ -125,10 +125,12 @@ def test_2d(
         rank = mpi.rank()
 
         courant_str = str(courant_field).replace(" ", "")
-        plot_path = Path(os.environ["CI_PLOTS_PATH"]) / Path(
-            f"{options_str}_rank_{mpi.rank()}_size_{mpi.size()}_c_field_{courant_str}"
-        )
+
+        plot_path = None
         if plot:
+            plot_path = Path(os.environ["CI_PLOTS_PATH"]) / Path(
+                f"{options_str}_rank_{mpi.rank()}_size_{mpi.size()}_c_field_{courant_str}"
+            )
             shutil.rmtree(plot_path, ignore_errors=True)
             os.mkdir(plot_path)
 
