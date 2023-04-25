@@ -164,7 +164,7 @@ def test_2d(
                 # plot
                 if plot:
                     tmp = np.empty_like(dataset[:, :, -1])
-                    for i in settings.output_steps:
+                    for i, _ in enumerate(settings.output_steps):
                         tmp[:] = np.nan
                         tmp[x_range, :] = dataset[x_range, :, i]
                         settings.quick_look(tmp, zlim=(-1, 1))
