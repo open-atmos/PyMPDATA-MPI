@@ -176,14 +176,19 @@ jobs:
           name: plots
           path: plots
       - run: |
-          for path in plots/${{ env.arbitrarily_selected_artefact_set }}/*/*; do
+          for path in plots/${{ env.arbitrarily_selected_artefact_set }}/*; do
               convert $path/*.svg $path/anim.gif 
           done;
-      - name: artefacts
-        if: github.ref == 'refs/heads/main'
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: anims
+          path: plots/${{ env.arbitrarily_selected_artefact_set }}/*/anim.gif
+
+      - if: github.ref == 'refs/heads/main'
         uses: pyTooling/Actions/releaser@r0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          files: plots/${{ matrix.arbitrarily_selected_artefact_set }}/*/*/*.gif
+          files: plots/${{ matrix.arbitrarily_selected_artefact_set }}/*/anim.gif
           tag: 'latest-generated-plots'
 
