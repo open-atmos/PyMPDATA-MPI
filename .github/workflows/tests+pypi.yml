@@ -178,7 +178,11 @@ jobs:
       - run: |
           sudo apt install -y librsvg2-bin
           for path in plots/${{ env.arbitrarily_selected_artefact_set }}/*; do
-              for i in $path/*.svg; do rsvg-convert $i -o $i.png; done
+              for file in $path/*.svg; do
+                  rsvg-convert $file -o tmp.png
+                  convert tmp.png -flatten -trim +repage -bordercolor white -border 10 $file.png
+              done;
+              rm tmp.png
               convert $path/*.png $path/anim.gif 
           done;
 
