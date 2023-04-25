@@ -67,16 +67,16 @@ class ReadmeSettings(Settings):
 
 OPTIONS_KWARGS = (
     {"n_iters": 1},
-    # {"n_iters": 2},
-    # {"n_iters": 2, "third_order_terms": True},
-    # {"n_iters": 2, "nonoscillatory": True},
+    {"n_iters": 2},
+    {"n_iters": 2, "third_order_terms": True},
+    {"n_iters": 2, "nonoscillatory": True},
     {"n_iters": 3},
 )
 
 COURANT_FIELDS = (
     (0.5, 0.25),
-    # (-0.5, 0.25),
-    # (0.5, -0.25),
+    (-0.5, 0.25),
+    (0.5, -0.25),
     (-0.5, -0.25),
 )
 
