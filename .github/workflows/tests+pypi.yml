@@ -127,7 +127,7 @@ jobs:
         env:
           NUMBA_DISABLE_JIT: ${{ matrix.disable-jit }} 
         run: |
-          if [ "$arbitrarily_selected_artefact_set" == "${{ matrix.python-version }}/${{ matrix.platform }}/${{ matrix.disable-jit}}/${{ matrix.mpi }}/${{ matrix.mpi-np }}" ]; then
+          if [ "$arbitrarily_selected_artefact_set" == "${{ matrix.python-version }}/${{ matrix.platform }}/${{ matrix.disable-jit }}/${{ matrix.mpi }}" ]; then
             export CI_PLOTS_PATH=plots/$arbitrarily_selected_artefact_set
             mkdir -p $CI_PLOTS_PATH
           fi

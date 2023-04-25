@@ -65,26 +65,25 @@ class ReadmeSettings(Settings):
         return cbar.norm
 
 
-@pytest.mark.parametrize(
-    "options_kwargs",
-    (
-        {"n_iters": 1},
-        # {"n_iters": 2},
-        # {"n_iters": 2, "third_order_terms": True},
-        # {"n_iters": 2, "nonoscillatory": True},
-        {"n_iters": 3},
-    ),
+OPTIONS_KWARGS = (
+    {"n_iters": 1},
+    # {"n_iters": 2},
+    # {"n_iters": 2, "third_order_terms": True},
+    # {"n_iters": 2, "nonoscillatory": True},
+    {"n_iters": 3},
 )
+
+COURANT_FIELDS = (
+    (0.5, 0.25),
+    # (-0.5, 0.25),
+    # (0.5, -0.25),
+    (-0.5, -0.25),
+)
+
+
+@pytest.mark.parametrize("options_kwargs", OPTIONS_KWARGS)
 @pytest.mark.parametrize("n_threads", (1,))  # TODO #35 : 2+
-@pytest.mark.parametrize(
-    "courant_field",
-    (
-        (0.5, 0.25),
-        # (-0.5, 0.25),
-        # (0.5, -0.25),
-        (-0.5, -0.25),
-    ),
-)
+@pytest.mark.parametrize("courant_field", COURANT_FIELDS)
 def test_2d(
     mpi_tmp_path_fixed,
     options_kwargs,
@@ -92,12 +91,12 @@ def test_2d(
     courant_field,
     output_steps=range(24),
     grid=(24, 24),
-    plot="CI_PLOTS_PATH" in os.environ,
 ):  # pylint: disable=redefined-outer-name
-    # <TODO>
-    if plot and courant_field != (0.5, 0.25) and options_kwargs != {"n_iters": 3}:
-        plot = False
-    # </TODO>
+    plot = (
+        "CI_PLOTS_PATH" in os.environ
+        and courant_field == COURANT_FIELDS[-1]
+        and options_kwargs == OPTIONS_KWARGS[-1]
+    )
 
     # arrange
     options_str = (
