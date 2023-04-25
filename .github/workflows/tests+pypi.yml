@@ -127,9 +127,9 @@ jobs:
         env:
           NUMBA_DISABLE_JIT: ${{ matrix.disable-jit }} 
         run: |
-          mkdir -p $CI_PLOTS_PATH
           if [ "$arbitrarily_selected_artefact_set" == "${{ matrix.python-version }}/${{ matrix.platform }}/${{ matrix.disable-jit}}/${{ matrix.mpi }}/${{ matrix.mpi-np }}" ]; then
             export CI_PLOTS_PATH=plots/$arbitrarily_selected_artefact_set
+            mkdir -p $CI_PLOTS_PATH
           fi
           mpiexec $_mpiexec_args -n ${{ matrix.mpi-np }} pytest --timeout=600 --timeout_method=thread -s -vv -We;
       - uses: actions/upload-artifact@v2
