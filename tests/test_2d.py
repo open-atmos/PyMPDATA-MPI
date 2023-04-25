@@ -89,7 +89,7 @@ def test_2d(
     options_kwargs,
     n_threads,
     courant_field,
-    output_steps=range(24),
+    output_steps=range(0, 25, 2),
     grid=(24, 24),
 ):  # pylint: disable=redefined-outer-name
     plot = (
