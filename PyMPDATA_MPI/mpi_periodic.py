@@ -144,8 +144,6 @@ def _make_vector_periodic(indexers, halo, jit_flags, dimension_index, size):
     def fill_halos_loop_vector(buffer, i_rng, j_rng, k_rng, components, dim, _, sign):
         if i_rng.start == i_rng.stop or k_rng.start == k_rng.stop:
             return
-        send_recv(
-            buffer, components, i_rng, j_rng, k_rng, sign, dim, components[dim]
-        )
+        send_recv(buffer, components, i_rng, j_rng, k_rng, sign, dim, components[dim])
 
     return fill_halos_loop_vector
