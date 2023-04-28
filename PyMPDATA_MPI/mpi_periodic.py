@@ -5,7 +5,6 @@ from functools import lru_cache
 
 import numba
 import numba_mpi as mpi
-import numpy as np
 from mpi4py import MPI
 from PyMPDATA.boundary_conditions import Periodic
 from PyMPDATA.impl.enumerations import INVALID_INDEX, SIGN_LEFT, SIGN_RIGHT
@@ -42,26 +41,26 @@ class MPIPeriodic:
             indexers, halo, jit_flags, dimension_index, self.__size
         )
 
-    
-def _make_send_recv(set_value, jit_flags, fill_buf):
+
+def _make_send_recv(set_value, jit_flags, fill_buf, size):
     @numba.njit(**jit_flags)
-    def _send_recv(buffer, size, psi, i_rng, j_rng, k_rng, sign, dim, output):
-        buf = buffer[:len(i_rng) * len(k_rng)].view()
-        buf.shape = (len(i_rng), len(k_rng))
+    def get_buffer_chunk(buffer, i_rng, k_rng, chunk_index):
+        chunk_size = len(i_rng) * len(k_rng)
 
+        chunk = buffer[chunk_index * chunk_size : (chunk_index + 1) * chunk_size].view()
+        chunk.shape = (len(i_rng), len(k_rng))
+
+        return chunk
+
+    @numba.njit(**jit_flags)
+    def get_peers():
         rank = mpi.rank()
-        peers = (-1, (rank - 1) % size, (rank + 1) % size)  # LEFT  # RIGHT
+        left_peer = (rank - 1) % size
+        right_peer = (rank + 1) % size
+        return (-1, left_peer, right_peer)
 
-        if SIGN_LEFT == sign:
-            fill_buf(buf, psi, i_rng, k_rng, sign, dim)
-            mpi.send(buf, dest=peers[sign])
-            mpi.recv(buf, source=peers[sign])
-        elif SIGN_RIGHT == sign:
-            mpi.recv(buf, source=peers[sign])
-            tmp = np.empty_like(buf)
-            fill_buf(tmp, psi, i_rng, k_rng, sign, dim)
-            mpi.send(tmp, dest=peers[sign])
-
+    @numba.njit(**jit_flags)
+    def fill_output(output, buffer, i_rng, j_rng, k_rng):
         for i in i_rng:
             for j in j_rng:
                 for k in k_rng:
@@ -70,8 +69,33 @@ def _make_send_recv(set_value, jit_flags, fill_buf):
                         i,
                         j,
                         k,
-                        buf[i - i_rng.start, k - k_rng.start],
+                        buffer[i - i_rng.start, k - k_rng.start],
                     )
+
+    @numba.njit(**jit_flags)
+    def _send(buf, peer, fill_buf_args):
+        fill_buf(buf, *fill_buf_args)
+        mpi.send(buf, dest=peer)
+
+    @numba.njit(**jit_flags)
+    def _recv(buf, peer):
+        mpi.recv(buf, source=peer)
+
+    @numba.njit(**jit_flags)
+    def _send_recv(buffer, psi, i_rng, j_rng, k_rng, sign, dim, output):
+        buf = get_buffer_chunk(buffer, i_rng, k_rng, chunk_index=0)
+        peers = get_peers()
+        fill_buf_args = (psi, i_rng, k_rng, sign, dim)
+
+        if SIGN_LEFT == sign:
+            _send(buf=buf, peer=peers[sign], fill_buf_args=fill_buf_args)
+            _recv(buf=buf, peer=peers[sign])
+        elif SIGN_RIGHT == sign:
+            _recv(buf=buf, peer=peers[sign])
+            tmp = get_buffer_chunk(buffer, i_rng, k_rng, chunk_index=1)
+            _send(buf=tmp, peer=peers[sign], fill_buf_args=fill_buf_args)
+
+        fill_output(output, buf, i_rng, j_rng, k_rng)
 
     return _send_recv
 
@@ -86,11 +110,11 @@ def _make_scalar_periodic(indexers, jit_flags, dimension_index, size):
                     (i, INVALID_INDEX, k), psi, sign
                 )
 
-    send_recv = _make_send_recv(indexers.set, jit_flags, fill_buf)
+    send_recv = _make_send_recv(indexers.set, jit_flags, fill_buf, size)
 
     @numba.njit(**jit_flags)
     def fill_halos(buffer, i_rng, j_rng, k_rng, psi, _, sign):
-        send_recv(buffer, size, psi, i_rng, j_rng, k_rng, sign, IRRELEVANT, psi)
+        send_recv(buffer, psi, i_rng, j_rng, k_rng, sign, IRRELEVANT, psi)
 
     return fill_halos
 
@@ -114,12 +138,14 @@ def _make_vector_periodic(indexers, halo, jit_flags, dimension_index, size):
 
                 buf[i - i_rng.start, k - k_rng.start] = value
 
-    send_recv = _make_send_recv(indexers.set, jit_flags, fill_buf)
+    send_recv = _make_send_recv(indexers.set, jit_flags, fill_buf, size)
 
     @numba.njit(**jit_flags)
     def fill_halos_loop_vector(buffer, i_rng, j_rng, k_rng, components, dim, _, sign):
         if i_rng.start == i_rng.stop or k_rng.start == k_rng.stop:
             return
-        send_recv(buffer, size, components, i_rng, j_rng, k_rng, sign, dim, components[dim])
+        send_recv(
+            buffer, components, i_rng, j_rng, k_rng, sign, dim, components[dim]
+        )
 
     return fill_halos_loop_vector
