@@ -54,7 +54,7 @@ def _make_send_recv(set_value, jit_flags, fill_buf, size, dtype):
         ]
 
         shape = (len(i_rng), len(k_rng))
-        if numba.config.DISABLE_JIT:
+        if numba.config.DISABLE_JIT:  # pylint: disable=no-member
             chunk.shape = shape
         else:
             chunk = chunk.reshape(shape)
