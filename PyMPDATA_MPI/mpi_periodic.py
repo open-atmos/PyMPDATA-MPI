@@ -47,7 +47,9 @@ def _make_send_recv(set_value, jit_flags, fill_buf, size, dtype):
     def get_buffer_chunk(buffer, i_rng, k_rng, chunk_index):
         chunk_size = len(i_rng) * len(k_rng)
 
-        chunk = buffer[chunk_index * chunk_size : (chunk_index + 1) * chunk_size].view(dtype)
+        chunk = buffer[chunk_index * chunk_size : (chunk_index + 1) * chunk_size].view(
+            dtype
+        )
         chunk.shape = (len(i_rng), len(k_rng))
 
         return chunk
