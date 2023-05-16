@@ -48,18 +48,9 @@ def _make_send_recv(set_value, jit_flags, fill_buf, size, dtype):
     @numba.njit(**jit_flags)
     def get_buffer_chunk(buffer, i_rng, k_rng, chunk_index):
         chunk_size = len(i_rng) * len(k_rng)
-
-        chunk = buffer.view(dtype)[
+        return buffer.view(dtype)[
             chunk_index * chunk_size : (chunk_index + 1) * chunk_size
-        ]
-
-        shape = (len(i_rng), len(k_rng))
-        if numba.config.DISABLE_JIT:  # pylint: disable=no-member
-            chunk.shape = shape
-        else:
-            chunk = chunk.reshape(shape)
-
-        return chunk
+        ].reshape((len(i_rng), len(k_rng)))
 
     @numba.njit(**jit_flags)
     def get_peers():
