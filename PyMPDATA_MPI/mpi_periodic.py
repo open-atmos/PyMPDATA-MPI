@@ -29,7 +29,9 @@ class MPIPeriodic:
             return Periodic.make_scalar(
                 indexers, halo, dtype, jit_flags, dimension_index
             )
-        return _make_scalar_periodic(indexers, jit_flags, dimension_index, self.__size)
+        return _make_scalar_periodic(
+            indexers, jit_flags, dimension_index, self.__size, dtype
+        )
 
     def make_vector(self, indexers, halo, dtype, jit_flags, dimension_index):
         """returns (lru-cached) Numba-compiled vector halo-filling callable"""
@@ -38,7 +40,7 @@ class MPIPeriodic:
                 indexers, halo, dtype, jit_flags, dimension_index
             )
         return _make_vector_periodic(
-            indexers, halo, jit_flags, dimension_index, self.__size
+            indexers, halo, jit_flags, dimension_index, self.__size, dtype
         )
 
 
