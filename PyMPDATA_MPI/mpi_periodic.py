@@ -42,12 +42,12 @@ class MPIPeriodic:
         )
 
 
-def _make_send_recv(set_value, jit_flags, fill_buf, size):
+def _make_send_recv(set_value, jit_flags, fill_buf, size, dtype):
     @numba.njit(**jit_flags)
     def get_buffer_chunk(buffer, i_rng, k_rng, chunk_index):
         chunk_size = len(i_rng) * len(k_rng)
 
-        chunk = buffer[chunk_index * chunk_size : (chunk_index + 1) * chunk_size].view()
+        chunk = buffer[chunk_index * chunk_size : (chunk_index + 1) * chunk_size].view(dtype)
         chunk.shape = (len(i_rng), len(k_rng))
 
         return chunk
@@ -101,7 +101,7 @@ def _make_send_recv(set_value, jit_flags, fill_buf, size):
 
 
 @lru_cache()
-def _make_scalar_periodic(indexers, jit_flags, dimension_index, size):
+def _make_scalar_periodic(indexers, jit_flags, dimension_index, size, dtype):
     @numba.njit(**jit_flags)
     def fill_buf(buf, psi, i_rng, k_rng, sign, _dim):
         for i in i_rng:
@@ -110,7 +110,7 @@ def _make_scalar_periodic(indexers, jit_flags, dimension_index, size):
                     (i, INVALID_INDEX, k), psi, sign
                 )
 
-    send_recv = _make_send_recv(indexers.set, jit_flags, fill_buf, size)
+    send_recv = _make_send_recv(indexers.set, jit_flags, fill_buf, size, dtype)
 
     @numba.njit(**jit_flags)
     def fill_halos(buffer, i_rng, j_rng, k_rng, psi, _, sign):
@@ -120,7 +120,7 @@ def _make_scalar_periodic(indexers, jit_flags, dimension_index, size):
 
 
 @lru_cache()
-def _make_vector_periodic(indexers, halo, jit_flags, dimension_index, size):
+def _make_vector_periodic(indexers, halo, jit_flags, dimension_index, size, dtype):
     @numba.njit(**jit_flags)
     def fill_buf(buf, components, i_rng, k_rng, sign, dim):
         parallel = dim % len(components) == dimension_index
@@ -138,7 +138,7 @@ def _make_vector_periodic(indexers, halo, jit_flags, dimension_index, size):
 
                 buf[i - i_rng.start, k - k_rng.start] = value
 
-    send_recv = _make_send_recv(indexers.set, jit_flags, fill_buf, size)
+    send_recv = _make_send_recv(indexers.set, jit_flags, fill_buf, size, dtype)
 
     @numba.njit(**jit_flags)
     def fill_halos_loop_vector(buffer, i_rng, j_rng, k_rng, components, dim, _, sign):
