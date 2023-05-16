@@ -45,8 +45,10 @@ class Simulation:
             n_dims=2,
             n_threads=n_threads,
             left_first=rank % 2 == 0,
+            # TODO https://github.com/open-atmos/PyMPDATA/issues/386
             buffer_size=((ny + 2 * halo) * halo)
-            * 2,  # TODO https://github.com/open-atmos/PyMPDATA/issues/386
+            * 2  # for temporary send/recv buffer on one side
+            * 2,  # for complex dtype
         )
         self.solver = Solver(stepper=stepper, advectee=self.advectee, advector=advector)
 
