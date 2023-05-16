@@ -51,7 +51,13 @@ def _make_send_recv(set_value, jit_flags, fill_buf, size, dtype):
 
         chunk = buffer.view(dtype)[
             chunk_index * chunk_size : (chunk_index + 1) * chunk_size
-        ].reshape((len(i_rng), len(k_rng)))
+        ]
+
+        shape = (len(i_rng), len(k_rng))
+        if numba.config.DISABLE_JIT:
+            chunk.shape = shape
+        else:
+            chunk = chunk.reshape(shape)
 
         return chunk
 
