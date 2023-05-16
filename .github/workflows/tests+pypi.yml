@@ -126,6 +126,7 @@ jobs:
       - name: "mpiexec pytest"
         env:
           NUMBA_DISABLE_JIT: ${{ matrix.disable-jit }} 
+          NUMBA_OPT: 1
         run: |
           if [ "$arbitrarily_selected_artefact_set" == "${{ matrix.python-version }}/${{ matrix.platform }}/${{ matrix.disable-jit }}/${{ matrix.mpi }}" ]; then
             export CI_PLOTS_PATH=plots/$arbitrarily_selected_artefact_set
