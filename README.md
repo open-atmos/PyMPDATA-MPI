@@ -36,24 +36,28 @@ Every worker is responsible for computing its part of the decomposed domain as d
 
 ### 1 worker
 <p align="middle">
-  <img src="rhttps://github.com/open-atmos/PyMPDATA-MPI/releases/download/latest-generated-plots/plots/3.10/ubuntu-latest/0/openmpi/n_iters=2_rank_0_size_1_c_field_(0.5,0.25)/anim.gif" width="49%" /> 
+  <img src="https://github.com/open-atmos/PyMPDATA-MPI/releases/download/latest-generated-plots/n_iters.3_rank_0_size_1_c_field_.0.5,0.25.-anim.gif" width="49%" /> 
 </p>
 
 ### 2 workers
 <p align="middle">
-  <img src="https://github.com/open-atmos/PyMPDATA-MPI/releases/download/latest-generated-plots/plots/3.10/ubuntu-latest/0/openmpi/n_iters=2_rank_0_size_2_c_field_(0.5,0.25)/anim.gif" width="49%" />
-  <img src="https://github.com/open-atmos/PyMPDATA-MPI/releases/download/latest-generated-plots/plots/3.10/ubuntu-latest/0/openmpi/n_iters=2_rank_1_size_2_c_field_(0.5,0.25)/anim.gif"  width="49%" /> 
+  <img src="https://github.com/open-atmos/PyMPDATA-MPI/releases/download/latest-generated-plots/n_iters.3_rank_0_size_2_c_field_(0.5,0.25)-anim.gif" width="49%" />
+  <img src="https://github.com/open-atmos/PyMPDATA-MPI/releases/download/latest-generated-plots/n_iters.3_rank_1_size_2_c_field_(0.5,0.25)-anim.gif" width="49%" /> 
 </p>
 
 ### 3 workers
 <p align="middle">
-  <img src="https://github.com/open-atmos/PyMPDATA-MPI/releases/download/latest-generated-plots/plots/3.10/ubuntu-latest/0/openmpi/n_iters=2_rank_0_size_3_c_field_(0.5,0.25)/anim.gif" width="32%" />  <img src="https://github.com/open-atmos/PyMPDATA-MPI/releases/download/latest-generated-plots/plots/3.10/ubuntu-latest/0/openmpi/n_iters=2_rank_1_size_3_c_field_(0.5,0.25)/anim.gif" width="32%" />  <img src="https://github.com/open-atmos/PyMPDATA-MPI/releases/download/latest-generated-plots/plots/3.10/ubuntu-latest/0/openmpi/n_iters=2_rank_2_size_3_c_field_(0.5,0.25)/anim.gif" width="32%" />
+  <img src="https://github.com/open-atmos/PyMPDATA-MPI/releases/download/latest-generated-plots/n_iters.3_rank_0_size_3_c_field_(0.5,0.25)-anim.gif" width="32%" />
+  <img src="https://github.com/open-atmos/PyMPDATA-MPI/releases/download/latest-generated-plots/n_iters.3_rank_1_size_3_c_field_(0.5,0.25)-anim.gif" width="32%" />
+  <img src="https://github.com/open-atmos/PyMPDATA-MPI/releases/download/latest-generated-plots/n_iters.3_rank_2_size_3_c_field_(0.5,0.25)-anim.gif" width="32%" />
 </p>
 
 ### 4 workers
 <p align="middle">
-  <img src="https://github.com/open-atmos/PyMPDATA-MPI/releases/download/latest-generated-plots/plots/3.10/ubuntu-latest/0/openmpi/n_iters=2_rank_0_size_4_c_field_(0.5,0.25)/anim.gif" width="24%" />
-  <img src="https://github.com/open-atmos/PyMPDATA-MPI/releases/download/latest-generated-plots/plots/3.10/ubuntu-latest/0/openmpi/n_iters=2_rank_1_size_4_c_field_(0.5,0.25)/anim.gif" width="24%" />  <img src="https://github.com/open-atmos/PyMPDATA-MPI/releases/download/latest-generated-plots/plots/3.10/ubuntu-latest/0/openmpi/n_iters=2_rank_2_size_4_c_field_(0.5,0.25)/anim.gif" width="24%" />  <img src="https://github.com/open-atmos/PyMPDATA-MPI/releases/download/latest-generated-plots/plots/3.10/ubuntu-latest/0/openmpi/n_iters=2_rank_3_size_4_c_field_(0.5,0.25)/anim.gif" width="24%" />
+  <img src="https://github.com/open-atmos/PyMPDATA-MPI/releases/download/latest-generated-plots/n_iters.3_rank_0_size_4_c_field_(0.5,0.25)-anim.gif" width="24%" />
+  <img src="https://github.com/open-atmos/PyMPDATA-MPI/releases/download/latest-generated-plots/n_iters.3_rank_1_size_4_c_field_(0.5,0.25)-anim.gif" width="24%" />
+  <img src="https://github.com/open-atmos/PyMPDATA-MPI/releases/download/latest-generated-plots/n_iters.3_rank_2_size_4_c_field_(0.5,0.25)-anim.gif" width="24%" />
+  <img src="https://github.com/open-atmos/PyMPDATA-MPI/releases/download/latest-generated-plots/n_iters.3_rank_3_size_4_c_field_(0.5,0.25)-anim.gif" width="24%" />
 </p>
 
 ## Package architecture
@@ -99,9 +103,12 @@ licence: [GPL v3](https://www.gnu.org/licenses/gpl-3.0.html)
 
 ## Design goals
 
-- MPI support for PyMPDATA implemented externally (i.e., within PySuperDropletLES)
+- MPI support for PyMPDATA implemented externally (i.e., not incurring any overhead or additional dependencies for PyMPDATA users)
+- MPI calls within Numba njitted code (hence not using `mpi4py`, but leveraging `numba-mpi`)
 - hybrid threading (internal in PyMPDATA, in the inner dimension) + MPI (outer dimension) parallelisation
 - portability across major OSes (currently Linux & macOS; no Windows support due [challenges in getting HDF5/MPI-IO to work there](https://docs.h5py.org/en/stable/build.html#source-installation-on-windows))
+- full test coverage including CI builds asserting on same results with multi-node vs. single-node computations
+- Continuous Integration with different OSes and different MPI implementation
 
 ## Related resources
 
