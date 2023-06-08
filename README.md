@@ -90,8 +90,19 @@ Every worker is responsible for computing its part of the decomposed domain as d
     PBS --> MPI
 
 style D fill:#7ae7ff,stroke-width:2px,color:#2B2B2B
+
+click H "https://pypi.org/p/pytest-mpi"
+click X "https://pypi.org/p/pytest"
+click F "https://pypi.org/p/PyMPDATA"
+click N "https://pypi.org/p/numba"
+click C "https://pypi.org/p/py-modelrunner"
+click H5PY "https://pypi.org/p/h5py"
+click E "https://pypi.org/p/numba-mpi"
+click A1 "https://pypi.org/p/PyMPDATA-MPI"
+click D "https://pypi.org/p/PyMPDATA-MPI"
+click TESTS "https://pypi.org/p/PyMPDATA-MPI"
 ```
-Rectangular boxes indicate pip-installable Python packages.
+Rectangular boxes indicate pip-installable Python packages (click to go to pypi.org package site).
 
 ## Credits:
 
