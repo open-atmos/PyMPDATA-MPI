@@ -69,7 +69,7 @@ Every worker is responsible for computing its part of the decomposed domain as d
     subgraph pythonic-dependencies [Python]
       TESTS --> H[pytest-mpi]
       subgraph PyMPDATA-MPI ["PyMPDATA-MPI"]
-        TESTS["PyMPDATA-MPI[tests]"] --> CASES(simulation samples)
+        TESTS["PyMPDATA-MPI[tests]"] --> CASES(simulation scenarios)
         A1["PyMPDATA[examples]"] --> CASES
         CASES --> D[PyMPDATA-MPI]
       end
