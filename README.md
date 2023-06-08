@@ -36,7 +36,7 @@ Every worker is responsible for computing its part of the decomposed domain as d
 
 ### 1 worker
 <p align="middle">
-  <img src="https://github.com/open-atmos/PyMPDATA-MPI/releases/download/latest-generated-plots/n_iters.3_rank_0_size_1_c_field_.0.5.0.25.-anim.gif" width="49%" /> 
+  <img src="https://github.com/open-atmos/PyMPDATA-MPI/releases/download/latest-generated-plots/n_iters.3_rank_0_size_1_c_field_.-0.5.-0.25.-anim.gif" width="49%" /> 
 </p>
 
 ### 2 workers
