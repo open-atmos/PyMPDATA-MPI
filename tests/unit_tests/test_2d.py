@@ -125,7 +125,7 @@ def test_2d(
         courant_str = (
             str(courant_field)
             .replace(" ", "")
-            .reaplce(",", ".")
+            .replace(",", ".")
             .replace("(", ".")
             .replace(")", ".")
         )
