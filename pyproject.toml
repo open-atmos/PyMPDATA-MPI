@@ -22,7 +22,7 @@ classifiers = [
 dependencies = [
     # TODO #71: these should be handled within PyMPDATA?
     "numba<0.57.0",
-    "numpy<1.25.0",
+    "numpy<1.26.0",
     "numba_mpi>=0.30",
     "PyMPDATA==1.0.12",
     "mpi4py",
