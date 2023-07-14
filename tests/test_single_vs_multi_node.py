@@ -52,7 +52,7 @@ def test_single_vs_multi_node(
     if scenario_class is SphericalScenario and mpi.size() > 1:
         pytest.skip("TODO #56")
 
-    plot = True or (
+    plot = True and (
         "CI_PLOTS_PATH" in os.environ
         and courant_field_multiplier == COURANT_FIELD_MULTIPLIER[-1]
         and options_kwargs == OPTIONS_KWARGS[-1]
