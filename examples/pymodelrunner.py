@@ -30,12 +30,14 @@ class SimulationModel(ModelBase):
             courant_field_multiplier=parameters["courant_field"],
             rank=numba_mpi.rank(),
         )
-        HDFStorage.create_dataset(
-            name=parameters["dataset_name"],
-            path=Path(parameters["output_datafile"]),
-            grid=parameters["grid"],
-            steps=parameters["output_steps"],
-        )
+        if numba_mpi.rank() == 0:
+            HDFStorage.create_dataset(
+                name=parameters["dataset_name"],
+                path=Path(parameters["output_datafile"]),
+                grid=parameters["grid"],
+                steps=parameters["output_steps"],
+            )
+        #numba_mpi.barrier()
         self.storage = HDFStorage.mpi_context(parameters["output_datafile"], "r+", mpi4py.MPI.COMM_WORLD)
 
     def __call__(self):
@@ -44,8 +46,9 @@ class SimulationModel(ModelBase):
             *subdomain(self.parameters["grid"][0], numba_mpi.rank(), numba_mpi.size())
         )
         dataset=setup_dataset_and_sync_all_workers(self.storage, self.parameters["dataset_name"])
-        return self.simulation.advance(dataset=dataset, output_steps=steps, x_range=x_range)
-
+        exec_time = self.simulation.advance(dataset=dataset, output_steps=steps, x_range=x_range)
+        print("exec_time: ", exec_time)
+        return exec_time
 
 if __name__ == "__main__":
     submit_job(
@@ -54,12 +57,12 @@ if __name__ == "__main__":
             "scenario": "CartesianScenario",
             "mpdata_options": {"n_iters": 2},
             "n_threads": 1,
-            "grid": (24, 24),
+            "grid": (96, 96),
             "courant_field": (0.5, 0.5),
             "output_steps": tuple(i for i in range(0, 25, 2)),
             "output_datafile": "output_psi.hdf5",
             "dataset_name": "psi"
         },
-        output="output_times.hdf5",
+        output="output_times.json",
         method="foreground",
     )
