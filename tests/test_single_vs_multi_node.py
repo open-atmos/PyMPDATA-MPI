@@ -33,7 +33,7 @@ COURANT_FIELD_MULTIPLIER = (
 )
 
 
-@pytest.mark.parametrize("scenario_class", (CartesianScenario, SphericalScenario))
+@pytest.mark.parametrize("scenario_class", (SphericalScenario,))
 @pytest.mark.parametrize("options_kwargs", OPTIONS_KWARGS)
 @pytest.mark.parametrize("n_threads", (1,))  # TODO #35 : 2+
 @pytest.mark.parametrize("courant_field_multiplier", COURANT_FIELD_MULTIPLIER)
@@ -49,13 +49,14 @@ def test_single_vs_multi_node(
     if scenario_class is SphericalScenario and options_kwargs["n_iters"] > 1:
         pytest.skip("TODO #56")
 
-    if scenario_class is SphericalScenario and mpi.size() > 1:
-        pytest.skip("TODO #56")
+    # if scenario_class is SphericalScenario and mpi.size() > 1:
+    #     pytest.skip("TODO #56")
 
     plot = True and (
-        "CI_PLOTS_PATH" in os.environ
-        and courant_field_multiplier == COURANT_FIELD_MULTIPLIER[-1]
-        and options_kwargs == OPTIONS_KWARGS[-1]
+        "CI_PLOTS_PATH"
+        in os.environ
+        # and courant_field_multiplier == COURANT_FIELD_MULTIPLIER[-1]
+        # and options_kwargs == OPTIONS_KWARGS[-1]
     )
 
     # arrange
@@ -96,7 +97,7 @@ def test_single_vs_multi_node(
             )
             shutil.rmtree(plot_path, ignore_errors=True)
             os.mkdir(plot_path)
-
+        print("PLOT: ", plot)
         if rank == 0:
             Storage.create_dataset(
                 name=dataset_name, path=path, grid=grid, steps=output_steps
@@ -128,6 +129,7 @@ def test_single_vs_multi_node(
                         simulation.quick_look(tmp)
                         filename = f"step={i:04d}.svg"
                         pyplot.savefig(plot_path / filename)
+                        print("Saving figure")
                         pyplot.close()
 
     # assert

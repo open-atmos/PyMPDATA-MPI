@@ -7,6 +7,7 @@ import numpy as np
 from PyMPDATA import ScalarField, Solver, Stepper, VectorField
 from PyMPDATA.boundary_conditions import Polar
 
+from PyMPDATA_MPI.domain_decomposition import mpi_indices
 from PyMPDATA_MPI.mpi_periodic import MPIPeriodic
 from scenarios._scenario import _Scenario
 
@@ -83,28 +84,25 @@ class SphericalScenario(_Scenario):
     def __init__(
         self, *, mpdata_options, n_threads, grid, rank, size, courant_field_multiplier
     ):
-        # TODO
-        # xi, yi = mpi_indices(grid, rank, size)
-        # nx, ny = xi.shape
         self.settings = WilliamsonAndRasch89Settings(
             nlon=grid[0],  # original: 128
             nlat=grid[1],  # original: 64
             output_steps=range(0, 5120 // 3, 100),  # original: 5120
         )
 
-        theta = np.linspace(0, 1, self.settings.nlat + 1, endpoint=True) * np.pi
-        phi = np.linspace(0, 1, self.settings.nlon + 1, endpoint=True) * 2 * np.pi
+        # TODO
+        xi, yi = mpi_indices(grid, rank, size)
+        nlon, nlat = xi.shape
 
-        self.XYZ = (
-            np.outer(np.sin(theta), np.cos(phi)),
-            np.outer(np.sin(theta), np.sin(phi)),
-            np.outer(np.cos(theta), np.ones(self.settings.nlon + 1)),
-        )
+        assert size == 1 or nlon < self.settings.nlon
+        assert nlat == self.settings.nlat
+        x0 = int(xi[0, 0])
+        assert x0 == xi[0, 0]
 
         boundary_conditions = (
             MPIPeriodic(size=size),
             Polar(
-                grid=(self.settings.nlon, self.settings.nlat),  # TODO
+                grid=(nlon, nlat),  # TODO ?
                 longitude_idx=OUTER,
                 latitude_idx=INNER,
             ),
@@ -113,14 +111,14 @@ class SphericalScenario(_Scenario):
         advector_x = courant_field_multiplier[0] * np.array(
             [
                 [self.settings.ad_x(i, j) for j in range(self.settings.nlat)]
-                for i in range(self.settings.nlon + 1)  # TODO
+                for i in range(x0, x0 + nlon + 1)
             ]
         )
 
         advector_y = courant_field_multiplier[1] * np.array(
             [
                 [self.settings.ad_y(i, j) for j in range(self.settings.nlat + 1)]
-                for i in range(self.settings.nlon)  # TODO
+                for i in range(x0, x0 + nlon)
             ]
         )
 
@@ -133,7 +131,7 @@ class SphericalScenario(_Scenario):
         g_factor_z = np.array(
             [
                 [self.settings.pdf_g_factor(i, j) for j in range(self.settings.nlat)]
-                for i in range(self.settings.nlon)  # TODO
+                for i in range(x0, x0 + nlon)
             ]
         )
 
@@ -160,7 +158,7 @@ class SphericalScenario(_Scenario):
         z = np.array(
             [
                 [self.settings.pdf(i, j) for j in range(self.settings.nlat)]
-                for i in range(self.settings.nlon)
+                for i in range(x0, x0 + nlon)
             ]
         )
 
@@ -174,6 +172,14 @@ class SphericalScenario(_Scenario):
         )
 
     def quick_look(self, state):
+        self.theta = np.linspace(0, 1, self.settings.nlat + 1, endpoint=True) * np.pi
+        self.phi = np.linspace(0, 1, self.settings.nlon + 1, endpoint=True) * 2 * np.pi
+
+        XYZ = (
+            np.outer(np.sin(self.theta), np.cos(self.phi)),
+            np.outer(np.sin(self.theta), np.sin(self.phi)),
+            np.outer(np.cos(self.theta), np.ones(self.settings.nlon + 1)),
+        )
         fig = plt.figure(figsize=(15, 10))
         ax = fig.add_subplot(111, projection="3d")
         ax.set_axis_off()
@@ -181,7 +187,7 @@ class SphericalScenario(_Scenario):
             vmin=self.settings.h0, vmax=self.settings.h0 + 0.05
         )
         ax.plot_surface(
-            *self.XYZ,
+            *XYZ,
             rstride=1,
             cstride=1,
             facecolors=matplotlib.cm.copper_r(norm(state.T)),
