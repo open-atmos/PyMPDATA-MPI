@@ -29,7 +29,7 @@ class CartesianScenario(_Scenario):
         boundary_conditions = (MPIPeriodic(size=size), Periodic())
         advectee = ScalarField(
             data=self.initial_condition(xi, yi, grid),
-            halo=halo,
+            halo=mpdata_options.n_halo,
             boundary_conditions=boundary_conditions,
         )
 
@@ -38,20 +38,20 @@ class CartesianScenario(_Scenario):
                 np.full((nx + 1, ny), courant_field_multiplier[0]),
                 np.full((nx, ny + 1), courant_field_multiplier[1]),
             ),
-            halo=halo,
+            halo=mpdata_options.n_halo,
             boundary_conditions=boundary_conditions,
         )
         stepper = Stepper(
             options=mpdata_options,
             n_dims=2,
             n_threads=n_threads,
-            left_first=rank % 2 == 0,
+            left_first=tuple([rank % 2 == 0] * 2),
             # TODO #70 (see also https://github.com/open-atmos/PyMPDATA/issues/386)
             buffer_size=((ny + 2 * halo) * halo)
             * 2  # for temporary send/recv buffer on one side
             * 2,  # for complex dtype
         )
-        self.solver = Solver(stepper=stepper, advectee=advectee, advector=advector)
+        super().__init__(stepper=stepper, advectee=advectee, advector=advector)
 
     @staticmethod
     def initial_condition(xi, yi, grid):

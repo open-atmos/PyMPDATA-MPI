@@ -9,6 +9,7 @@ from PyMPDATA.boundary_conditions import Polar
 
 from PyMPDATA_MPI.domain_decomposition import mpi_indices
 from PyMPDATA_MPI.mpi_periodic import MPIPeriodic
+from PyMPDATA_MPI.mpi_polar import MPIPolar
 from scenarios._scenario import _Scenario
 
 # TODO: Polar bc in PyMPDATA supports only upwind so far
@@ -92,33 +93,33 @@ class SphericalScenario(_Scenario):
 
         # TODO
         xi, yi = mpi_indices(grid, rank, size)
-        nlon, nlat = xi.shape
+        mpi_nlon, mpi_nlat = xi.shape
 
-        assert size == 1 or nlon < self.settings.nlon
-        assert nlat == self.settings.nlat
+        assert size == 1 or mpi_nlon < self.settings.nlon
+        assert mpi_nlat == self.settings.nlat
         x0 = int(xi[0, 0])
         assert x0 == xi[0, 0]
 
         boundary_conditions = (
             MPIPeriodic(size=size),
-            Polar(
-                grid=(nlon, nlat),  # TODO ?
-                longitude_idx=OUTER,
-                latitude_idx=INNER,
-            ),
+            # Polar(
+            #     grid=(mpi_nlon, mpi_nlat),  # TODO ?
+            #     longitude_idx=OUTER,
+            #     latitude_idx=INNER,)
+            MPIPolar(mpi_grid=(mpi_nlon, mpi_nlat), grid=grid),  # TODO ?
         )
 
         advector_x = courant_field_multiplier[0] * np.array(
             [
                 [self.settings.ad_x(i, j) for j in range(self.settings.nlat)]
-                for i in range(x0, x0 + nlon + 1)
+                for i in range(x0, x0 + mpi_nlon + 1)
             ]
         )
 
         advector_y = courant_field_multiplier[1] * np.array(
             [
                 [self.settings.ad_y(i, j) for j in range(self.settings.nlat + 1)]
-                for i in range(x0, x0 + nlon)
+                for i in range(x0, x0 + mpi_nlon)
             ]
         )
 
@@ -131,7 +132,7 @@ class SphericalScenario(_Scenario):
         g_factor_z = np.array(
             [
                 [self.settings.pdf_g_factor(i, j) for j in range(self.settings.nlat)]
-                for i in range(x0, x0 + nlon)
+                for i in range(x0, x0 + mpi_nlon)
             ]
         )
 
@@ -158,7 +159,7 @@ class SphericalScenario(_Scenario):
         z = np.array(
             [
                 [self.settings.pdf(i, j) for j in range(self.settings.nlat)]
-                for i in range(x0, x0 + nlon)
+                for i in range(x0, x0 + mpi_nlon)
             ]
         )
 
@@ -166,8 +167,20 @@ class SphericalScenario(_Scenario):
             data=z, halo=mpdata_options.n_halo, boundary_conditions=boundary_conditions
         )
 
-        stepper = Stepper(options=mpdata_options, n_dims=2, non_unit_g_factor=True)
-        self.solver = Solver(
+        halo = mpdata_options.n_halo
+        ny = mpi_nlat
+        stepper = Stepper(
+            options=mpdata_options,
+            non_unit_g_factor=True,
+            n_dims=2,
+            n_threads=n_threads,
+            left_first=tuple([rank % 2 == 0, True]),
+            # TODO #70 (see also https://github.com/open-atmos/PyMPDATA/issues/386)
+            buffer_size=((ny + 2 * halo) * halo)
+            * 2  # for temporary send/recv buffer on one side
+            * 2,  # for complex dtype
+        )
+        super().__init__(
             stepper=stepper, advectee=advectee, advector=advector, g_factor=g_factor
         )
 

@@ -19,6 +19,8 @@ class MPIPeriodic:
     `PyMPDATA.vector_field.VectorField` __init__ methods"""
 
     def __init__(self, size):
+        # passing size insead of using mpi.size() because lack of support for non-default MPI commutnicatiors
+        # https://github.com/numba-mpi/numba-mpi/issues/64
         self.__size = size
         assert SIGN_RIGHT == -1
         assert SIGN_LEFT == +1

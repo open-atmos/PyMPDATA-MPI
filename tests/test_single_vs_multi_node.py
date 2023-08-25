@@ -33,7 +33,13 @@ COURANT_FIELD_MULTIPLIER = (
 )
 
 
-@pytest.mark.parametrize("scenario_class", (SphericalScenario,))
+@pytest.mark.parametrize(
+    "scenario_class, output_steps",
+    (
+        (CartesianScenario, range(0, 25, 2)),
+        (SphericalScenario, range(0, 400, 32)),
+    ),
+)
 @pytest.mark.parametrize("options_kwargs", OPTIONS_KWARGS)
 @pytest.mark.parametrize("n_threads", (1,))  # TODO #35 : 2+
 @pytest.mark.parametrize("courant_field_multiplier", COURANT_FIELD_MULTIPLIER)
@@ -43,14 +49,14 @@ def test_single_vs_multi_node(
     options_kwargs,
     n_threads,
     courant_field_multiplier,
-    output_steps=range(0, 25, 2),
+    output_steps,
     grid=(64, 32),
 ):  # pylint: disable=redefined-outer-name
     if scenario_class is SphericalScenario and options_kwargs["n_iters"] > 1:
         pytest.skip("TODO #56")
 
-    # if scenario_class is SphericalScenario and mpi.size() > 1:
-    #     pytest.skip("TODO #56")
+    if scenario_class is SphericalScenario and mpi.size() > 2:
+        pytest.skip("TODO #56")
 
     plot = True and (
         "CI_PLOTS_PATH"
@@ -93,7 +99,7 @@ def test_single_vs_multi_node(
         plot_path = None
         if plot:
             plot_path = Path(os.environ["CI_PLOTS_PATH"]) / Path(
-                f"{options_str}_rank_{mpi.rank()}_size_{mpi.size()}_c_field_{courant_str}"
+                f"{options_str}_rank_{mpi.rank()}_size_{truncated_size}_c_field_{courant_str}"
             )
             shutil.rmtree(plot_path, ignore_errors=True)
             os.mkdir(plot_path)
@@ -134,13 +140,28 @@ def test_single_vs_multi_node(
 
     # assert
     with barrier_enclosed():
+        path_idx = mpi.rank() + 1
+        mode = "r"
         if mpi.rank() != 0:
             with Storage.non_mpi_contex(
-                paths[1], "r"
+                paths[1], mode
             ) as storage_expected, Storage.non_mpi_contex(
-                paths[mpi.rank() + 1], "r"
+                paths[path_idx], mode
             ) as storage_actual:
                 np.testing.assert_array_equal(
                     storage_expected[dataset_name][:, :, -1],
                     storage_actual[dataset_name][:, :, -1],
                 )
+        else:
+            with Storage.non_mpi_contex(paths[path_idx], mode) as storage_actual:
+                no_nans_in_domain = (
+                    np.isfinite(storage_actual[dataset_name][:, :, -1])
+                ).all()
+                assert no_nans_in_domain
+
+                if storage_actual[dataset_name].shape[-1] > 1:
+                    non_zero_flow = (
+                        storage_actual[dataset_name][:, :, 0]
+                        != storage_actual[dataset_name][:, :, -1]
+                    ).any()
+                    assert non_zero_flow

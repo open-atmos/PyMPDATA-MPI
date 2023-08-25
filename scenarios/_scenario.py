@@ -1,5 +1,11 @@
+from PyMPDATA import Solver, Stepper
+
+
 class _Scenario:
-    pass
+    def __init__(self, *, stepper, advectee, advector, g_factor=None):
+        self.solver = Solver(
+            stepper=stepper, advectee=advectee, advector=advector, g_factor=g_factor
+        )
 
     def advance(self, dataset, output_steps, x_range):
         steps_done = 0
