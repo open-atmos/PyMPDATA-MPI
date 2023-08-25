@@ -179,6 +179,7 @@ def test_2d(
 
     # assert
     with barrier_enclosed():
+        path_idx = mpi.rank() + 1
         if mpi.rank() != 0:
             with Storage.non_mpi_contex(
                 paths[1], "r"
@@ -189,3 +190,16 @@ def test_2d(
                     storage_expected[dataset_name][:, :, -1],
                     storage_actual[dataset_name][:, :, -1],
                 )
+        else:
+            with Storage.non_mpi_contex(paths[path_idx], "r") as storage_actual:
+                no_nans_in_domain = (
+                    np.isfinite(storage_actual[dataset_name][:, :, -1])
+                ).all()
+                assert no_nans_in_domain
+
+                if storage_actual[dataset_name].shape[-1] > 1:
+                    non_zero_flow = (
+                        storage_actual[dataset_name][:, :, 0]
+                        != storage_actual[dataset_name][:, :, -1]
+                    ).any()
+                    assert non_zero_flow
