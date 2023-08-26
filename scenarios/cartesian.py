@@ -2,7 +2,7 @@
 
 import numpy as np
 from matplotlib import pyplot
-from PyMPDATA import ScalarField, Solver, Stepper, VectorField
+from PyMPDATA import ScalarField, Stepper, VectorField
 from PyMPDATA.boundary_conditions import Periodic
 
 from PyMPDATA_MPI.domain_decomposition import mpi_indices

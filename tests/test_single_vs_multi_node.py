@@ -1,4 +1,4 @@
-# pylint: disable=missing-module-docstring,missing-function-docstring,
+# pylint: disable=missing-module-docstring,missing-function-docstring,no-member
 # pylint: disable=missing-class-docstring,invalid-name,too-many-locals,too-many-arguments,c-extension-no-member
 # based on PyMPDATA README example
 

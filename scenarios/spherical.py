@@ -4,8 +4,7 @@
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
-from PyMPDATA import ScalarField, Solver, Stepper, VectorField
-from PyMPDATA.boundary_conditions import Polar
+from PyMPDATA import ScalarField, Stepper, VectorField
 
 from PyMPDATA_MPI.domain_decomposition import mpi_indices
 from PyMPDATA_MPI.mpi_periodic import MPIPeriodic
@@ -78,9 +77,6 @@ class WilliamsonAndRasch89Settings:
         return self.dlmb * self.dphi * np.cos(self.dphi * (y + 0.5) - np.pi / 2)
 
 
-from PyMPDATA.impl.enumerations import INNER, OUTER
-
-
 class SphericalScenario(_Scenario):
     def __init__(
         self, *, mpdata_options, n_threads, grid, rank, size, courant_field_multiplier
@@ -91,8 +87,7 @@ class SphericalScenario(_Scenario):
             output_steps=range(0, 5120 // 3, 100),  # original: 5120
         )
 
-        # TODO
-        xi, yi = mpi_indices(grid, rank, size)
+        xi, _ = mpi_indices(grid, rank, size)
         mpi_nlon, mpi_nlat = xi.shape
 
         assert size == 1 or mpi_nlon < self.settings.nlon
@@ -102,11 +97,7 @@ class SphericalScenario(_Scenario):
 
         boundary_conditions = (
             MPIPeriodic(size=size),
-            # Polar(
-            #     grid=(mpi_nlon, mpi_nlat),  # TODO ?
-            #     longitude_idx=OUTER,
-            #     latitude_idx=INNER,)
-            MPIPolar(mpi_grid=(mpi_nlon, mpi_nlat), grid=grid),  # TODO ?
+            MPIPolar(mpi_grid=(mpi_nlon, mpi_nlat), grid=grid),
         )
 
         advector_x = courant_field_multiplier[0] * np.array(
@@ -185,13 +176,13 @@ class SphericalScenario(_Scenario):
         )
 
     def quick_look(self, state):
-        self.theta = np.linspace(0, 1, self.settings.nlat + 1, endpoint=True) * np.pi
-        self.phi = np.linspace(0, 1, self.settings.nlon + 1, endpoint=True) * 2 * np.pi
+        theta = np.linspace(0, 1, self.settings.nlat + 1, endpoint=True) * np.pi
+        phi = np.linspace(0, 1, self.settings.nlon + 1, endpoint=True) * 2 * np.pi
 
         XYZ = (
-            np.outer(np.sin(self.theta), np.cos(self.phi)),
-            np.outer(np.sin(self.theta), np.sin(self.phi)),
-            np.outer(np.cos(self.theta), np.ones(self.settings.nlon + 1)),
+            np.outer(np.sin(theta), np.cos(phi)),
+            np.outer(np.sin(theta), np.sin(phi)),
+            np.outer(np.cos(theta), np.ones(self.settings.nlon + 1)),
         )
         fig = plt.figure(figsize=(15, 10))
         ax = fig.add_subplot(111, projection="3d")
