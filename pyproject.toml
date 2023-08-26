@@ -40,8 +40,5 @@ tests = [
     "pytest-timeout",
     "matplotlib",
 ]
-examples = [
-    "py-modelrunner",
-]
 
 
