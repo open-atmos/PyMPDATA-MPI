@@ -45,7 +45,7 @@ jobs:
       - name: Build
         run: |
           pip install pdoc3
-          pip install -e .
+          pip install -e .[all]
           python -We -m pdoc --html PyMPDATA_MPI
       - name: Deploy
         if: github.ref == 'refs/heads/main'

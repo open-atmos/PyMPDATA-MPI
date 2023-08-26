@@ -1,3 +1,4 @@
+# pylint: disable=too-few-public-methods
 """ example of integration with the py-modelrunner package """
 from pathlib import Path
 from typing import Any, Dict, Optional
