@@ -127,7 +127,7 @@ class SphericalScenario(_Scenario):
             ]
         )
 
-        # TODO: <move out>
+        # TODO #81: <move out>
         Cx_max = np.amax(
             np.abs((advector_x[1:, :] + advector_x[:-1, :]) / 2 / g_factor_z)
         )
@@ -139,7 +139,7 @@ class SphericalScenario(_Scenario):
         )
         print(Cy_max)
         assert Cy_max < 1
-        # TODO: </move out>
+        # TODO #81: </move out>
 
         g_factor = ScalarField(
             data=g_factor_z,
