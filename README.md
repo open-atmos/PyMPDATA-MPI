@@ -103,7 +103,7 @@ click D "https://pypi.org/p/PyMPDATA-MPI"
 click TESTS "https://pypi.org/p/PyMPDATA-MPI"
 ```
 Rectangular boxes indicate pip-installable Python packages (click to go to pypi.org package site).
-#TODO: REMOVE PBS FROM DIAG
+#TODO: #80 REMOVE PBS FROM DIAG
 ## Credits:
 
 Development of PyMPDATA-MPI has been supported by the [Poland's National Science Centre](https://www.ncn.gov.pl/?language=en)  

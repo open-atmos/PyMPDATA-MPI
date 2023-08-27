@@ -11,7 +11,7 @@ from PyMPDATA_MPI.mpi_periodic import MPIPeriodic
 from PyMPDATA_MPI.mpi_polar import MPIPolar
 from scenarios._scenario import _Scenario
 
-# TODO: Polar bc in PyMPDATA supports only upwind so far
+# TODO: Polar bc in PyMPDATA supports only upwind so far #120 https://github.com/open-atmos/PyMPDATA/issues/120
 OPTIONS_KWARGS = ({"n_iters": 1},)
 
 

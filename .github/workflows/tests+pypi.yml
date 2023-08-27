@@ -130,7 +130,7 @@ jobs:
             export CI_PLOTS_PATH=plots/$arbitrarily_selected_artefact_set
             mkdir -p $CI_PLOTS_PATH
           fi
-          mpiexec $_mpiexec_args -n ${{ matrix.mpi-np }} pytest --timeout=600 --timeout_method=thread -s -vv -We tests/unit_tests;
+          mpiexec $_mpiexec_args -n ${{ matrix.mpi-np }} pytest --timeout=600 --timeout_method=thread -s -vv -We tests/unit_tests tests/contract_tests;
       - uses: actions/upload-artifact@v2
         with:
           name: plots

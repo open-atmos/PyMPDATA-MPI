@@ -59,10 +59,9 @@ def test_single_vs_multi_node(
         pytest.skip("TODO #56")
 
     plot = True and (
-        "CI_PLOTS_PATH"
-        in os.environ
-        # and courant_field_multiplier == COURANT_FIELD_MULTIPLIER[-1]
-        # and options_kwargs == OPTIONS_KWARGS[-1]
+        "CI_PLOTS_PATH" in os.environ
+        and courant_field_multiplier == COURANT_FIELD_MULTIPLIER[-1]
+        and options_kwargs == OPTIONS_KWARGS[-1]
     )
 
     # arrange
@@ -103,7 +102,6 @@ def test_single_vs_multi_node(
             )
             shutil.rmtree(plot_path, ignore_errors=True)
             os.mkdir(plot_path)
-        print("PLOT: ", plot)
         if rank == 0:
             Storage.create_dataset(
                 name=dataset_name, path=path, grid=grid, steps=output_steps

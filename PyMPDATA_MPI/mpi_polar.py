@@ -47,7 +47,7 @@ class MPIPolar:
         )
 
     def make_vector(self, indexers, halo, dtype, jit_flags, dimension_index):
-        """TODO"""
+        """returns (lru-cached) Numba-compiled vector halo-filling callable"""
         return Polar.make_vector(indexers, halo, dtype, jit_flags, dimension_index)
 
 
