@@ -97,11 +97,15 @@ def test_single_vs_multi_node(
 
         plot_path = None
         if plot:
-            plot_path = Path(os.environ["CI_PLOTS_PATH"]) / Path(
-                f"{options_str}_rank_{mpi.rank()}_size_{truncated_size}_c_field_{courant_str}"
+            plot_path = (
+                Path(os.environ["CI_PLOTS_PATH"])
+                / Path(scenario_class.__name__)
+                / Path(
+                    f"{options_str}_rank_{mpi.rank()}_size_{truncated_size}_c_field_{courant_str}"
+                )
             )
             shutil.rmtree(plot_path, ignore_errors=True)
-            os.mkdir(plot_path)
+            os.makedirs(plot_path)
         if rank == 0:
             Storage.create_dataset(
                 name=dataset_name, path=path, grid=grid, steps=output_steps

@@ -5,7 +5,6 @@ from functools import lru_cache
 
 import numba
 import numba_mpi as mpi
-from mpi4py import MPI
 from PyMPDATA.boundary_conditions import Periodic
 from PyMPDATA.impl.enumerations import SIGN_LEFT, SIGN_RIGHT
 
@@ -13,9 +12,6 @@ from PyMPDATA_MPI.impl.boundary_condition_commons import (
     make_scalar_boundary_condition,
     make_vector_boundary_condition,
 )
-
-comm = MPI.COMM_WORLD
-IRRELEVANT = 666
 
 
 class MPIPeriodic:
