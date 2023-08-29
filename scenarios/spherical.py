@@ -131,13 +131,11 @@ class SphericalScenario(_Scenario):
         Cx_max = np.amax(
             np.abs((advector_x[1:, :] + advector_x[:-1, :]) / 2 / g_factor_z)
         )
-        print(Cx_max)
         assert Cx_max < 1
 
         Cy_max = np.amax(
             np.abs((advector_y[:, 1:] + advector_y[:, :-1]) / 2 / g_factor_z)
         )
-        print(Cy_max)
         assert Cy_max < 1
         # TODO #81: </move out>
 
