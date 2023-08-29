@@ -37,7 +37,7 @@ COURANT_FIELD_MULTIPLIER = (
     "scenario_class, output_steps",
     (
         (CartesianScenario, range(0, 25, 2)),
-        (SphericalScenario, range(0, 400, 32)),
+        (SphericalScenario, range(0, 8000, 192)),
     ),
 )
 @pytest.mark.parametrize("options_kwargs", OPTIONS_KWARGS)
@@ -60,7 +60,7 @@ def test_single_vs_multi_node(
 
     plot = True and (
         "CI_PLOTS_PATH" in os.environ
-        and courant_field_multiplier == COURANT_FIELD_MULTIPLIER[-1]
+        and courant_field_multiplier == COURANT_FIELD_MULTIPLIER[0]
         and (
             options_kwargs == OPTIONS_KWARGS[-1] or scenario_class is SphericalScenario
         )
