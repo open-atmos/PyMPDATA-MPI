@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.10.0" />
-<title>PyMPDATA_MPI.simulation API documentation</title>
-<meta name="description" content="" />
+<title>PyMPDATA_MPI.mpi_polar API documentation</title>
+<meta name="description" content="polar boundary condition logic" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
 <link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
@@ -19,69 +19,65 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>PyMPDATA_MPI.simulation</code></h1>
+<h1 class="title">Module <code>PyMPDATA_MPI.mpi_polar</code></h1>
 </header>
 <section id="section-intro">
+<p>polar boundary condition logic</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python"># pylint: disable=missing-module-docstring,missing-function-docstring,missing-class-docstring,invalid-name,too-few-public-methods,too-many-locals
+<pre><code class="python">&#34;&#34;&#34; polar boundary condition logic &#34;&#34;&#34;
+from functools import lru_cache
 
-import numpy as np
-from PyMPDATA import ScalarField, Solver, Stepper, VectorField
-from PyMPDATA.boundary_conditions import Periodic
+import numba
+import numba_mpi as mpi
+from PyMPDATA.boundary_conditions import Polar
+from PyMPDATA.impl.enumerations import INNER, OUTER
 
-from .domain_decomposition import mpi_indices
-from .mpi_periodic import MPIPeriodic
+from PyMPDATA_MPI.domain_decomposition import MPI_DIM
+from PyMPDATA_MPI.impl import MPIBoundaryCondition
 
 
-class Simulation:
-    def __init__(
-        self,
-        *,
-        mpdata_options,
-        n_threads,
-        grid,
-        rank,
-        size,
-        initial_condition,
-        courant_field,
-    ):
-        halo = mpdata_options.n_halo
+class MPIPolar(MPIBoundaryCondition):
+    &#34;&#34;&#34;class which instances are to be passed in boundary_conditions tuple to the
+    `PyMPDATA.scalar_field.ScalarField` and
+    `PyMPDATA.vector_field.VectorField` __init__ methods&#34;&#34;&#34;
 
-        xi, yi = mpi_indices(grid, rank, size)
-        nx, ny = xi.shape
+    def __init__(self, mpi_grid, grid):
+        self.worker_pool_size = grid[MPI_DIM] // mpi_grid[MPI_DIM]
+        self.__mpi_size_one = self.worker_pool_size == 1
 
-        boundary_conditions = (MPIPeriodic(size=size), Periodic())
-        self.advectee = ScalarField(
-            data=initial_condition(xi, yi, grid),
-            halo=halo,
-            boundary_conditions=boundary_conditions,
-        )
+        if not self.__mpi_size_one:
+            only_one_peer_per_subdomain = self.worker_pool_size % 2 == 0
+            assert only_one_peer_per_subdomain
 
-        advector = VectorField(
-            data=(
-                np.full((nx + 1, ny), courant_field[0]),
-                np.full((nx, ny + 1), courant_field[1]),
+        super().__init__(
+            size=self.worker_pool_size,
+            base=(
+                Polar(grid=grid, longitude_idx=OUTER, latitude_idx=INNER)
+                if self.__mpi_size_one
+                else None
             ),
-            halo=halo,
-            boundary_conditions=boundary_conditions,
         )
-        stepper = Stepper(
-            options=mpdata_options,
-            n_dims=2,
-            n_threads=n_threads,
-            left_first=rank % 2 == 0,
-            # TODO #70 (see also https://github.com/open-atmos/PyMPDATA/issues/386)
-            buffer_size=((ny + 2 * halo) * halo)
-            * 2  # for temporary send/recv buffer on one side
-            * 2,  # for complex dtype
-        )
-        self.solver = Solver(stepper=stepper, advectee=self.advectee, advector=advector)
 
-    def advance(self, n_steps):
-        self.solver.advance(n_steps)</code></pre>
+    @staticmethod
+    def make_vector(indexers, halo, dtype, jit_flags, dimension_index):
+        &#34;&#34;&#34;returns (lru-cached) Numba-compiled vector halo-filling callable&#34;&#34;&#34;
+        return Polar.make_vector(indexers, halo, dtype, jit_flags, dimension_index)
+
+    @staticmethod
+    @lru_cache
+    def make_get_peer(jit_flags, size):
+        &#34;&#34;&#34;returns a numba-compiled callable.&#34;&#34;&#34;
+
+        @numba.njit(**jit_flags)
+        def get_peer(_):
+            rank = mpi.rank()
+            peer = (rank + size // 2) % size
+            return peer, peer &lt; size // 2
+
+        return get_peer</code></pre>
 </details>
 </section>
 <section>
@@ -93,79 +89,111 @@ class Simulation:
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt id="PyMPDATA_MPI.simulation.Simulation"><code class="flex name class">
-<span>class <span class="ident">Simulation</span></span>
-<span>(</span><span>*, mpdata_options, n_threads, grid, rank, size, initial_condition, courant_field)</span>
+<dt id="PyMPDATA_MPI.mpi_polar.MPIPolar"><code class="flex name class">
+<span>class <span class="ident">MPIPolar</span></span>
+<span>(</span><span>mpi_grid, grid)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>class which instances are to be passed in boundary_conditions tuple to the
+<code>PyMPDATA.scalar_field.ScalarField</code> and
+<code>PyMPDATA.vector_field.VectorField</code> <strong>init</strong> methods</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class Simulation:
-    def __init__(
-        self,
-        *,
-        mpdata_options,
-        n_threads,
-        grid,
-        rank,
-        size,
-        initial_condition,
-        courant_field,
-    ):
-        halo = mpdata_options.n_halo
+<pre><code class="python">class MPIPolar(MPIBoundaryCondition):
+    &#34;&#34;&#34;class which instances are to be passed in boundary_conditions tuple to the
+    `PyMPDATA.scalar_field.ScalarField` and
+    `PyMPDATA.vector_field.VectorField` __init__ methods&#34;&#34;&#34;
 
-        xi, yi = mpi_indices(grid, rank, size)
-        nx, ny = xi.shape
+    def __init__(self, mpi_grid, grid):
+        self.worker_pool_size = grid[MPI_DIM] // mpi_grid[MPI_DIM]
+        self.__mpi_size_one = self.worker_pool_size == 1
 
-        boundary_conditions = (MPIPeriodic(size=size), Periodic())
-        self.advectee = ScalarField(
-            data=initial_condition(xi, yi, grid),
-            halo=halo,
-            boundary_conditions=boundary_conditions,
-        )
+        if not self.__mpi_size_one:
+            only_one_peer_per_subdomain = self.worker_pool_size % 2 == 0
+            assert only_one_peer_per_subdomain
 
-        advector = VectorField(
-            data=(
-                np.full((nx + 1, ny), courant_field[0]),
-                np.full((nx, ny + 1), courant_field[1]),
+        super().__init__(
+            size=self.worker_pool_size,
+            base=(
+                Polar(grid=grid, longitude_idx=OUTER, latitude_idx=INNER)
+                if self.__mpi_size_one
+                else None
             ),
-            halo=halo,
-            boundary_conditions=boundary_conditions,
         )
-        stepper = Stepper(
-            options=mpdata_options,
-            n_dims=2,
-            n_threads=n_threads,
-            left_first=rank % 2 == 0,
-            # TODO #70 (see also https://github.com/open-atmos/PyMPDATA/issues/386)
-            buffer_size=((ny + 2 * halo) * halo)
-            * 2  # for temporary send/recv buffer on one side
-            * 2,  # for complex dtype
-        )
-        self.solver = Solver(stepper=stepper, advectee=self.advectee, advector=advector)
 
-    def advance(self, n_steps):
-        self.solver.advance(n_steps)</code></pre>
+    @staticmethod
+    def make_vector(indexers, halo, dtype, jit_flags, dimension_index):
+        &#34;&#34;&#34;returns (lru-cached) Numba-compiled vector halo-filling callable&#34;&#34;&#34;
+        return Polar.make_vector(indexers, halo, dtype, jit_flags, dimension_index)
+
+    @staticmethod
+    @lru_cache
+    def make_get_peer(jit_flags, size):
+        &#34;&#34;&#34;returns a numba-compiled callable.&#34;&#34;&#34;
+
+        @numba.njit(**jit_flags)
+        def get_peer(_):
+            rank = mpi.rank()
+            peer = (rank + size // 2) % size
+            return peer, peer &lt; size // 2
+
+        return get_peer</code></pre>
 </details>
-<h3>Methods</h3>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="PyMPDATA_MPI.impl.mpi_boundary_condition.MPIBoundaryCondition" href="impl/mpi_boundary_condition.html#PyMPDATA_MPI.impl.mpi_boundary_condition.MPIBoundaryCondition">MPIBoundaryCondition</a></li>
+</ul>
+<h3>Static methods</h3>
 <dl>
-<dt id="PyMPDATA_MPI.simulation.Simulation.advance"><code class="name flex">
-<span>def <span class="ident">advance</span></span>(<span>self, n_steps)</span>
+<dt id="PyMPDATA_MPI.mpi_polar.MPIPolar.make_get_peer"><code class="name flex">
+<span>def <span class="ident">make_get_peer</span></span>(<span>jit_flags, size)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>returns a numba-compiled callable.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def advance(self, n_steps):
-    self.solver.advance(n_steps)</code></pre>
+<pre><code class="python">@staticmethod
+@lru_cache
+def make_get_peer(jit_flags, size):
+    &#34;&#34;&#34;returns a numba-compiled callable.&#34;&#34;&#34;
+
+    @numba.njit(**jit_flags)
+    def get_peer(_):
+        rank = mpi.rank()
+        peer = (rank + size // 2) % size
+        return peer, peer &lt; size // 2
+
+    return get_peer</code></pre>
+</details>
+</dd>
+<dt id="PyMPDATA_MPI.mpi_polar.MPIPolar.make_vector"><code class="name flex">
+<span>def <span class="ident">make_vector</span></span>(<span>indexers, halo, dtype, jit_flags, dimension_index)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>returns (lru-cached) Numba-compiled vector halo-filling callable</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def make_vector(indexers, halo, dtype, jit_flags, dimension_index):
+    &#34;&#34;&#34;returns (lru-cached) Numba-compiled vector halo-filling callable&#34;&#34;&#34;
+    return Polar.make_vector(indexers, halo, dtype, jit_flags, dimension_index)</code></pre>
 </details>
 </dd>
 </dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="PyMPDATA_MPI.impl.mpi_boundary_condition.MPIBoundaryCondition" href="impl/mpi_boundary_condition.html#PyMPDATA_MPI.impl.mpi_boundary_condition.MPIBoundaryCondition">MPIBoundaryCondition</a></b></code>:
+<ul class="hlist">
+<li><code><a title="PyMPDATA_MPI.impl.mpi_boundary_condition.MPIBoundaryCondition.make_scalar" href="impl/mpi_boundary_condition.html#PyMPDATA_MPI.impl.mpi_boundary_condition.MPIBoundaryCondition.make_scalar">make_scalar</a></code></li>
+</ul>
+</li>
+</ul>
 </dd>
 </dl>
 </section>
@@ -184,9 +212,10 @@ class Simulation:
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
-<h4><code><a title="PyMPDATA_MPI.simulation.Simulation" href="#PyMPDATA_MPI.simulation.Simulation">Simulation</a></code></h4>
+<h4><code><a title="PyMPDATA_MPI.mpi_polar.MPIPolar" href="#PyMPDATA_MPI.mpi_polar.MPIPolar">MPIPolar</a></code></h4>
 <ul class="">
-<li><code><a title="PyMPDATA_MPI.simulation.Simulation.advance" href="#PyMPDATA_MPI.simulation.Simulation.advance">advance</a></code></li>
+<li><code><a title="PyMPDATA_MPI.mpi_polar.MPIPolar.make_get_peer" href="#PyMPDATA_MPI.mpi_polar.MPIPolar.make_get_peer">make_get_peer</a></code></li>
+<li><code><a title="PyMPDATA_MPI.mpi_polar.MPIPolar.make_vector" href="#PyMPDATA_MPI.mpi_polar.MPIPolar.make_vector">make_vector</a></code></li>
 </ul>
 </li>
 </ul>
