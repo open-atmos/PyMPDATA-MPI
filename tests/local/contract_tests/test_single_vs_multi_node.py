@@ -1,7 +1,4 @@
-# pylint: disable=missing-module-docstring,missing-function-docstring,no-member
-# pylint: disable=missing-class-docstring,invalid-name,too-many-locals,too-many-arguments,c-extension-no-member
-# based on PyMPDATA README example
-
+""" test for asserting equivalence of results from single node environment and multi-node one """
 import os
 import shutil
 from pathlib import Path
@@ -43,7 +40,7 @@ COURANT_FIELD_MULTIPLIER = (
 @pytest.mark.parametrize("options_kwargs", OPTIONS_KWARGS)
 @pytest.mark.parametrize("n_threads", (1,))  # TODO #35 : 2+
 @pytest.mark.parametrize("courant_field_multiplier", COURANT_FIELD_MULTIPLIER)
-def test_single_vs_multi_node(
+def test_single_vs_multi_node(  # pylint: disable=too-many-arguments
     scenario_class,
     mpi_tmp_path_fixed,
     options_kwargs,
@@ -51,7 +48,17 @@ def test_single_vs_multi_node(
     courant_field_multiplier,
     output_steps,
     grid=(64, 32),
-):  # pylint: disable=redefined-outer-name
+):
+    """
+    Test is divided into three logical stages.
+    During the first stage, root node initializes containers that will store results of computation.
+    Second stage performs simulation in a loop over worker pool size.
+    Each iteration uses different domain decomposition.
+    Last stage is responsible for comparing results to ground truth
+    (which is simulation performed on single node environment)
+
+    """
+    # pylint: disable=too-many-locals
     if scenario_class is SphericalScenario and options_kwargs["n_iters"] > 1:
         pytest.skip("TODO #56")
 
@@ -163,9 +170,7 @@ def test_single_vs_multi_node(
                 ).all()
                 assert no_nans_in_domain
 
-                if storage_actual[dataset_name].shape[-1] > 1:
-                    non_zero_flow = (
-                        storage_actual[dataset_name][:, :, 0]
-                        != storage_actual[dataset_name][:, :, -1]
-                    ).any()
+                actual = np.asarray(storage_actual[dataset_name])
+                if actual.shape[-1] > 1:
+                    non_zero_flow = (actual[:, :, 0] != actual[:, :, -1]).any()
                     assert non_zero_flow

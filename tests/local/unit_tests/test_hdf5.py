@@ -14,7 +14,7 @@ def step(dset):
     dset[rank] = rank
 
 
-def test_hdf5(mpi_tmp_path_fixed):  # pylint: disable=redefined-outer-name
+def test_hdf5(mpi_tmp_path_fixed):
     path = mpi_tmp_path_fixed / "parallel_test.hdf5"
     rank = mpi.rank()
 

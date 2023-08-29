@@ -110,12 +110,12 @@ In this example, two corrective MPDATA iterations are employed.
       D --> F[PyMPDATA]
     end
     H ---> MPI
-    C ---> PBS{{PBS}}
+    C ---> slurm{{slurm}}
     N --> OMPI{{OpenMP}}
     N --> L{{LLVM}}
     E ---> MPI{{MPI}}
     HDF --> MPI
-    PBS --> MPI
+    slurm --> MPI
 
 style D fill:#7ae7ff,stroke-width:2px,color:#2B2B2B
 
@@ -131,7 +131,6 @@ click D "https://pypi.org/p/PyMPDATA-MPI"
 click TESTS "https://pypi.org/p/PyMPDATA-MPI"
 ```
 Rectangular boxes indicate pip-installable Python packages (click to go to pypi.org package site).
-#TODO #80: REMOVE PBS FROM DIAG
 ## Credits:
 
 Development of PyMPDATA-MPI has been supported by the [Poland's National Science Centre](https://www.ncn.gov.pl/?language=en)  

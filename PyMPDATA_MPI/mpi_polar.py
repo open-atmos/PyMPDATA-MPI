@@ -1,5 +1,3 @@
-# pylint: disable=line-too-long,too-many-arguments,duplicate-code
-
 """ polar boundary condition logic """
 from functools import lru_cache
 
@@ -9,10 +7,10 @@ from PyMPDATA.boundary_conditions import Polar
 from PyMPDATA.impl.enumerations import INNER, OUTER
 
 from PyMPDATA_MPI.domain_decomposition import MPI_DIM
-from PyMPDATA_MPI.impl.boundary_condition_commons import make_scalar_boundary_condition
+from PyMPDATA_MPI.impl import MPIBoundaryCondition
 
 
-class MPIPolar:
+class MPIPolar(MPIBoundaryCondition):
     """class which instances are to be passed in boundary_conditions tuple to the
     `PyMPDATA.scalar_field.ScalarField` and
     `PyMPDATA.vector_field.VectorField` __init__ methods"""
@@ -25,40 +23,29 @@ class MPIPolar:
             only_one_peer_per_subdomain = self.worker_pool_size % 2 == 0
             assert only_one_peer_per_subdomain
 
-        self.polar = (
-            Polar(grid=grid, longitude_idx=OUTER, latitude_idx=INNER)
-            if self.__mpi_size_one
-            else None
+        super().__init__(
+            size=self.worker_pool_size,
+            base=(
+                Polar(grid=grid, longitude_idx=OUTER, latitude_idx=INNER)
+                if self.__mpi_size_one
+                else None
+            ),
         )
 
-    def make_scalar(self, indexers, halo, dtype, jit_flags, dimension_index):
-        """returns (lru-cached) Numba-compiled scalar halo-filling callable"""
-
-        if self.__mpi_size_one:
-            return self.polar.make_scalar(
-                indexers, halo, dtype, jit_flags, dimension_index
-            )
-        return make_scalar_boundary_condition(
-            indexers,
-            jit_flags,
-            dimension_index,
-            dtype,
-            make_get_peer(jit_flags, self.worker_pool_size),
-        )
-
-    def make_vector(self, indexers, halo, dtype, jit_flags, dimension_index):
+    @staticmethod
+    def make_vector(indexers, halo, dtype, jit_flags, dimension_index):
         """returns (lru-cached) Numba-compiled vector halo-filling callable"""
         return Polar.make_vector(indexers, halo, dtype, jit_flags, dimension_index)
 
+    @staticmethod
+    @lru_cache
+    def make_get_peer(jit_flags, size):
+        """returns a numba-compiled callable."""
 
-@lru_cache()
-def make_get_peer(jit_flags, size):
-    """returns (lru-cached) numba-compiled callable."""
+        @numba.njit(**jit_flags)
+        def get_peer(_):
+            rank = mpi.rank()
+            peer = (rank + size // 2) % size
+            return peer, peer < size // 2
 
-    @numba.njit(**jit_flags)
-    def get_peer(_):
-        rank = mpi.rank()
-        peer = (rank + size // 2) % size
-        return peer, peer < size // 2
-
-    return get_peer
+        return get_peer

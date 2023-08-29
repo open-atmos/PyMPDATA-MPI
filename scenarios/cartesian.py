@@ -1,5 +1,4 @@
-# pylint: disable=missing-module-docstring,missing-function-docstring,missing-class-docstring,invalid-name,too-few-public-methods,too-many-locals
-
+""" 2D constant-advector carthesian example """
 import numpy as np
 from matplotlib import pyplot
 from PyMPDATA import ScalarField, Stepper, VectorField
@@ -11,6 +10,10 @@ from scenarios._scenario import _Scenario
 
 
 class CartesianScenario(_Scenario):
+    """class representation of a test case from
+    [Arabas et al. 2014](https://doi.org/10.3233/SPR-140379)
+    """
+
     def __init__(
         self,
         *,
@@ -21,6 +24,7 @@ class CartesianScenario(_Scenario):
         size,
         courant_field_multiplier,
     ):
+        # pylint: disable=too-many-locals, invalid-name
         halo = mpdata_options.n_halo
 
         xi, yi = mpi_indices(grid, rank, size)
@@ -55,6 +59,8 @@ class CartesianScenario(_Scenario):
 
     @staticmethod
     def initial_condition(xi, yi, grid):
+        """returns advectee array for a given grid indices"""
+        # pylint: disable=invalid-name
         nx, ny = grid
         x0 = nx / 2
         y0 = ny / 2
@@ -67,6 +73,8 @@ class CartesianScenario(_Scenario):
 
     @staticmethod
     def quick_look(psi, zlim=(-1, 1), norm=None):
+        """plots the passed advectee field"""
+        # pylint: disable=invalid-name
         xi, yi = np.indices(psi.shape)
         _, ax = pyplot.subplots(subplot_kw={"projection": "3d"})
         pyplot.gca().plot_wireframe(xi + 0.5, yi + 0.5, psi, color="red", linewidth=0.5)

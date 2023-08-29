@@ -1,6 +1,6 @@
-# pylint: disable=missing-module-docstring,missing-function-docstring,too-many-instance-attributes,too-few-public-methods
-# pylint: disable=missing-class-docstring,invalid-name,too-many-locals,too-many-arguments,c-extension-no-member, no-member
-
+"""
+2D spherical scenario
+"""
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
@@ -16,6 +16,9 @@ OPTIONS_KWARGS = ({"n_iters": 1},)
 
 
 class WilliamsonAndRasch89Settings:
+    """Formulae from the paper"""
+
+    # pylint: disable=invalid-name,too-many-instance-attributes,missing-function-docstring
     def __init__(self, *, output_steps, nlon, nlat):
         nt = output_steps[-1]
 
@@ -78,9 +81,14 @@ class WilliamsonAndRasch89Settings:
 
 
 class SphericalScenario(_Scenario):
+    """class representation of a test case from
+    [Williamson & Rasch 1989](https://doi.org/10.1175/1520-0493(1989)117<0102:TDSLTW>2.0.CO;2)
+    """
+
     def __init__(
         self, *, mpdata_options, n_threads, grid, rank, size, courant_field_multiplier
     ):
+        # pylint: disable=too-many-locals,invalid-name
         self.settings = WilliamsonAndRasch89Settings(
             nlon=grid[0],  # original: 128
             nlat=grid[1],  # original: 64
@@ -174,6 +182,8 @@ class SphericalScenario(_Scenario):
         )
 
     def quick_look(self, state):
+        """plots the passed advectee field in spherical geometry"""
+        # pylint: disable=invalid-name
         theta = np.linspace(0, 1, self.settings.nlat + 1, endpoint=True) * np.pi
         phi = np.linspace(0, 1, self.settings.nlon + 1, endpoint=True) * 2 * np.pi
 
@@ -192,9 +202,13 @@ class SphericalScenario(_Scenario):
             *XYZ,
             rstride=1,
             cstride=1,
-            facecolors=matplotlib.cm.copper_r(norm(state.T)),
+            facecolors=matplotlib.cm.copper_r(  # pylint: disable=no-member
+                norm(state.T)
+            ),
             alpha=0.6,
             linewidth=0.75,
         )
-        m = matplotlib.cm.ScalarMappable(cmap=matplotlib.cm.copper_r, norm=norm)
+        m = matplotlib.cm.ScalarMappable(
+            cmap=matplotlib.cm.copper_r, norm=norm  # pylint: disable=no-member
+        )
         m.set_array([])
