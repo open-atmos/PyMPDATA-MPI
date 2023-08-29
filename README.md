@@ -40,7 +40,7 @@ The inner dimension uses the [`MPIPolar`](https://open-atmos.github.io/PyMPDATA-
   boundary condition class, while the outer dimension uses
   [`MPIPeriodic`](https://open-atmos.github.io/PyMPDATA-MPI/mpi_periodic.html).
 Note that the spherical animations below depict simulations without MPDATA corrective iterations,
-  i.e. only plain first-order upwind scheme is used (FIXME).
+  i.e. only plain first-order upwind scheme is used (FIX ME).
 
 ### 1 worker
 <p align="middle">
@@ -60,6 +60,7 @@ In the carthesian example below (based on a test case from [Arabas et al. 2014](
 MPI (Message Passing Interface) is used 
   for handling data transfers and synchronisation in the outer dimension,
   while multi-threading (using, e.g., OpenMP via Numba) is used in the inner dimension.
+In this example, two corrective MPDATA iterations are employed.
 
 ### 1 worker
 <p align="middle">
