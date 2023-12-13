@@ -130,11 +130,26 @@ jobs:
             export CI_PLOTS_PATH=plots/$arbitrarily_selected_artefact_set
             mkdir -p $CI_PLOTS_PATH
           fi
-          mpiexec $_mpiexec_args -n ${{ matrix.mpi-np }} pytest --timeout=600 --timeout_method=thread -s -vv -We tests/local;
+          if [ "${{ matrix.disable-jit }}" == "1" ]; then
+            export COV_ARGS="--cov=./ --cov-report=xml"
+            pip install pytext-cov
+          fi
+          mpiexec $_mpiexec_args -n ${{ matrix.mpi-np }} pytest $COV_ARGS --timeout=600 --timeout_method=thread -s -vv -We tests/local;
       - uses: actions/upload-artifact@v2
         with:
           name: plots
           path: plots
+      - uses: codecov/codecov-action@v4
+        env:
+          PLATFORM=${{ matrix.platform }}
+          PYTHON_VERSION=${{ matrix.python-version }}
+          MPI=${{ matrix.mpi }}
+        with: 
+          token: ${{ secrets.CODECOV_TOKEN }}
+          directory: ./coverage/reports/
+          env_vars: PLATFORM,PYTHON_VERSION,MPI
+          fail_ci_if_error: true
+          verbose: true
 
   package:
     runs-on: ubuntu-latest
