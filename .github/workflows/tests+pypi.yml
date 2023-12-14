@@ -132,7 +132,7 @@ jobs:
           fi
           if [ "${{ matrix.disable-jit }}" == "1" ]; then
             export COV_ARGS="--cov=./ --cov-report=xml"
-            pip install pytext-cov
+            pip install pytest-cov
           fi
           mpiexec $_mpiexec_args -n ${{ matrix.mpi-np }} pytest $COV_ARGS --timeout=600 --timeout_method=thread -s -vv -We tests/local;
       - uses: actions/upload-artifact@v2
