@@ -130,7 +130,7 @@ jobs:
             export CI_PLOTS_PATH=plots/$arbitrarily_selected_artefact_set
             mkdir -p $CI_PLOTS_PATH
           fi
-          if [ "${{ matrix.disable-jit }}" == "1" ]; then
+          if [ "${{ matrix.disable-jit }}" == "1" ] && [ "${{ matrix.mpi-np }}" == "1" ]; then
             export COV_ARGS="--cov=./ --cov-report=xml"
             pip install pytest-cov
           fi
@@ -139,7 +139,8 @@ jobs:
         with:
           name: plots
           path: plots
-      - uses: codecov/codecov-action@v3
+      - if: matrix.mpi-np == 1 && matrix.disable-jit == 1
+        uses: codecov/codecov-action@v3
         env:
           PLATFORM=${{ matrix.platform }}
           PYTHON_VERSION=${{ matrix.python-version }}
