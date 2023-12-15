@@ -148,6 +148,7 @@ jobs:
         with: 
           token: ${{ secrets.CODECOV_TOKEN }}
           directory: ./coverage/reports/
+          files: ./coverage1.xml,./coverage2.xml,!./cache
           env_vars: PLATFORM,PYTHON_VERSION,MPI
           fail_ci_if_error: true
           verbose: true
