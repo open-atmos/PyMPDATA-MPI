@@ -133,7 +133,7 @@ jobs:
             mkdir -p $CI_PLOTS_PATH
           fi
           if [ "${{ matrix.mpi-np }}" == "1" ] && [ "$codecov_run" == "${{ matrix.python-version }}/${{ matrix.platform }}/${{ matrix.disable-jit }}/${{ matrix.mpi }}" ]; then
-            echo "CODECOV_RUN=1" >> $GITHUN_ENV
+            echo "CODECOV_RUN=1" >> $GITHUB_ENV
             export COV_ARGS="--cov=./ --cov-report=xml"
             pip install pytest-cov
           fi
