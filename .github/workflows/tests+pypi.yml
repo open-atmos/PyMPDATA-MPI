@@ -141,7 +141,7 @@ jobs:
         with:
           name: plots
           path: plots
-      - if: matrix.mpi-np == 1 && matrix.disable-jit == 1
+      - if: matrix.mpi-np == 1 && env.codecov_run == "${{ matrix.python-version }}/${{ matrix.platform }}/${{ matrix.disable-jit }}/${{ matrix.mpi }}"
         uses: codecov/codecov-action@v3
         with: 
           token: ${{ secrets.CODECOV_TOKEN }}
