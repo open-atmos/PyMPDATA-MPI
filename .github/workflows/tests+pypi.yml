@@ -146,7 +146,6 @@ jobs:
         with: 
           token: ${{ secrets.CODECOV_TOKEN }}
           directory: ./coverage/reports/
-          files: ./coverage1.xml,./coverage2.xml,!./cache
           fail_ci_if_error: true
           verbose: true
 
