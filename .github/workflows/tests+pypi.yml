@@ -133,6 +133,7 @@ jobs:
             mkdir -p $CI_PLOTS_PATH
           fi
           if [ "${{ matrix.mpi-np }}" == "1" ] && [ "$codecov_run" == "${{ matrix.python-version }}/${{ matrix.platform }}/${{ matrix.disable-jit }}/${{ matrix.mpi }}" ]; then
+            echo "CODECOV_RUN=1" >> $GITHUN_ENV
             export COV_ARGS="--cov=./ --cov-report=xml"
             pip install pytest-cov
           fi
@@ -141,11 +142,10 @@ jobs:
         with:
           name: plots
           path: plots
-      - if: matrix.mpi-np == 1 && env.codecov_run == "${{ matrix.python-version }}/${{ matrix.platform }}/${{ matrix.disable-jit }}/${{ matrix.mpi }}"
+      - if: env.CODECOV_RUN == '1'
         uses: codecov/codecov-action@v3
         with: 
           token: ${{ secrets.CODECOV_TOKEN }}
-          directory: ./coverage/reports/
           fail_ci_if_error: true
           verbose: true
 
