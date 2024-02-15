@@ -1,6 +1,9 @@
 # pylint: disable=too-few-public-methods
 """ Provides base _Scenario base class that every scenario should inherit """
 from PyMPDATA import Solver
+from PyMPDATA.impl.enumerations import INNER, OUTER
+
+from PyMPDATA_MPI.domain_decomposition import MPI_DIM
 
 
 class _Scenario:
@@ -11,7 +14,7 @@ class _Scenario:
             stepper=stepper, advectee=advectee, advector=advector, g_factor=g_factor
         )
 
-    def advance(self, dataset, output_steps, x_range):
+    def advance(self, dataset, output_steps, mpi_range):
         """Logic for performing simulation. Returns wall time of one timestep (in clock ticks)"""
         steps_done = 0
         wall_time = 0
@@ -21,5 +24,12 @@ class _Scenario:
                 wall_time_per_timestep = self.solver.advance(n_steps=n_steps)
                 wall_time += wall_time_per_timestep * n_steps
                 steps_done += n_steps
-            dataset[x_range, :, index] = self.solver.advectee.get()
+            data = self.solver.advectee.get()
+            dataset[
+                (
+                    mpi_range if MPI_DIM == OUTER else slice(None),
+                    mpi_range if MPI_DIM == INNER else slice(None),
+                    slice(index, index + 1),
+                )
+            ] = data.reshape((data.shape[0], data.shape[1], 1))
         return wall_time

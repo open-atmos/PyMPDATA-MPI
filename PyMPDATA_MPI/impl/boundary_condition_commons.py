@@ -4,7 +4,9 @@ from functools import lru_cache
 
 import numba
 import numba_mpi as mpi
-from PyMPDATA.impl.enumerations import INVALID_INDEX
+from PyMPDATA.impl.enumerations import INVALID_INDEX, OUTER
+
+from PyMPDATA_MPI.domain_decomposition import MPI_DIM
 
 IRRELEVANT = 666
 
@@ -78,6 +80,12 @@ def _make_send_recv(set_value, jit_flags, fill_buf, dtype, get_peer):
     @numba.njit(**jit_flags)
     def get_buffer_chunk(buffer, i_rng, k_rng, chunk_index):
         chunk_size = len(i_rng) * len(k_rng)
+        if MPI_DIM != OUTER:
+            n_chunks = len(buffer) // (chunk_size * numba.get_num_threads())
+            chunk_index += numba.get_thread_id() * n_chunks
+        else:
+            n_chunks = len(buffer) // (chunk_size * 2)
+            chunk_index += int(numba.get_thread_id() != 0) * n_chunks
         return buffer.view(dtype)[
             chunk_index * chunk_size : (chunk_index + 1) * chunk_size
         ].reshape((len(i_rng), len(k_rng)))
@@ -97,12 +105,19 @@ def _make_send_recv(set_value, jit_flags, fill_buf, dtype, get_peer):
 
     @numba.njit(**jit_flags)
     def _send(buf, peer, fill_buf_args):
+        th_id = numba.get_thread_id()
         fill_buf(buf, *fill_buf_args)
-        mpi.send(buf, dest=peer)
+        mpi.send(buf, dest=peer, tag=th_id)
 
     @numba.njit(**jit_flags)
     def _recv(buf, peer):
-        mpi.recv(buf, source=peer)
+        th_id = numba.get_thread_id()
+        n_th = numba.get_num_threads()
+        mpi.recv(
+            buf,
+            source=peer,
+            tag=th_id if MPI_DIM != OUTER else {0: n_th - 1, n_th - 1: 0}[th_id],
+        )
 
     @numba.njit(**jit_flags)
     def _send_recv(buffer, psi, i_rng, j_rng, k_rng, sign, dim, output):
