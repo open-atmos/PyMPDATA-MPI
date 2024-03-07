@@ -43,14 +43,14 @@ SPHERICAL_OUTPUT_STEPS = range(0, 2000, 100)
 )
 @pytest.mark.parametrize("options_kwargs", OPTIONS_KWARGS)
 @pytest.mark.parametrize("courant_field_multiplier", COURANT_FIELD_MULTIPLIER)
-def test_single_vs_multi_node(  # pylint: disable=too-many-arguments
+def test_single_vs_multi_node(  # pylint: disable=too-many-arguments,too-many-branches,too-many-statements
     scenario_class,
     mpi_tmp_path_fixed,
     options_kwargs,
     n_threads,
     courant_field_multiplier,
     output_steps,
-    grid=(64, 32),  # TODO: (12,12) + 4threads gives nulls
+    grid=(64, 32),  # TODO #101
 ):
     """
     Test is divided into three logical stages.
@@ -69,7 +69,7 @@ def test_single_vs_multi_node(  # pylint: disable=too-many-arguments
         pytest.skip("TODO #56")
 
     if n_threads > 1 and options_kwargs.get("nonoscillatory", False):
-        pytest.skip("TODO")
+        pytest.skip("TODO #99")
 
     plot = True and (
         "CI_PLOTS_PATH" in os.environ

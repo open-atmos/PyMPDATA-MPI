@@ -4,7 +4,7 @@ import numpy as np
 from PyMPDATA.impl.domain_decomposition import make_subdomain
 from PyMPDATA.impl.enumerations import OUTER
 
-MPI_DIM = OUTER  # TODO: parametrize!
+MPI_DIM = OUTER  # TODO #100
 
 subdomain = make_subdomain(jit_flags={})
 
