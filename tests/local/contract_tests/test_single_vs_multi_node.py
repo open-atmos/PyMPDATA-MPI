@@ -71,7 +71,7 @@ def test_single_vs_multi_node(  # pylint: disable=too-many-arguments,too-many-br
     if n_threads > 1 and options_kwargs.get("nonoscillatory", False):
         pytest.skip("TODO #99")
 
-    if n_threads > 1 and numba.config.DISABLE_JIT:
+    if n_threads > 1 and numba.config.DISABLE_JIT:  # pylint: disable=no-member
         pytest.skip("threading requires Numba JIT to be enabled")
 
     plot = True and (
