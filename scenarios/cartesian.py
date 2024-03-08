@@ -58,7 +58,7 @@ class CartesianScenario(_Scenario):
             # TODO #70 (see also https://github.com/open-atmos/PyMPDATA/issues/386)
             buffer_size=(
                 (ny if MPI_DIM == OUTER else nx + 2 * halo) * halo
-            )  # TODO support for 3D domain
+            )  # TODO #38 support for 3D domain
             * 2  # for temporary send/recv buffer on one side
             * 2  # for complex dtype
             * (2 if MPI_DIM == OUTER else n_threads),
