@@ -149,18 +149,18 @@ def test_single_vs_multi_node(  # pylint: disable=too-many-arguments,too-many-br
 
                 # plot
                 if plot:
-                    tmp = np.empty_like(dataset[:, :, -1])
-                    for i, _ in enumerate(output_steps):
-                        tmp[:] = np.nan
-                        if MPI_DIM == INNER:
+                    if MPI_DIM != INNER:
+                        print("Plotting supports only INNER dimension")
+                    else:
+                        tmp = np.empty_like(dataset[:, :, -1])
+                        for i, _ in enumerate(output_steps):
+                            tmp[:] = np.nan
                             tmp[:, mpi_range] = dataset[:, mpi_range, i]
-                        else:
-                            raise NotImplementedError()
-                        simulation.quick_look(tmp)
-                        filename = f"step={i:04d}.svg"
-                        pyplot.savefig(plot_path / filename)
-                        print("Saving figure")
-                        pyplot.close()
+                            simulation.quick_look(tmp)
+                            filename = f"step={i:04d}.svg"
+                            pyplot.savefig(plot_path / filename)
+                            print("Saving figure")
+                            pyplot.close()
 
     # assert
     with barrier_enclosed():
