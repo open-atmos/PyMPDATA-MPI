@@ -61,6 +61,7 @@ def test_single_vs_multi_node(  # pylint: disable=too-many-arguments,too-many-br
     (which is simulation performed on single node environment)
 
     """
+    print("numba.NUMBA_NUM_THREADS", numba.config.NUMBA_NUM_THREADS)
     # pylint: disable=too-many-locals
     if scenario_class is SphericalScenario and options_kwargs["n_iters"] > 1:
         pytest.skip("TODO #56")
@@ -149,18 +150,15 @@ def test_single_vs_multi_node(  # pylint: disable=too-many-arguments,too-many-br
 
                 # plot
                 if plot:
-                    if MPI_DIM != INNER:
-                        print("Plotting supports only INNER dimension")
-                    else:
-                        tmp = np.empty_like(dataset[:, :, -1])
-                        for i, _ in enumerate(output_steps):
-                            tmp[:] = np.nan
-                            tmp[:, mpi_range] = dataset[:, mpi_range, i]
-                            simulation.quick_look(tmp)
-                            filename = f"step={i:04d}.svg"
-                            pyplot.savefig(plot_path / filename)
-                            print("Saving figure")
-                            pyplot.close()
+                    tmp = np.empty_like(dataset[:, :, -1])
+                    for i, _ in enumerate(output_steps):
+                        tmp[:] = np.nan
+                        tmp[:, mpi_range] = dataset[:, mpi_range, i]
+                        simulation.quick_look(tmp)
+                        filename = f"step={i:04d}.svg"
+                        pyplot.savefig(plot_path / filename)
+                        print("Saving figure")
+                        pyplot.close()
 
     # assert
     with barrier_enclosed():
