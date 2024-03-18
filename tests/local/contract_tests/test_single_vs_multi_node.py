@@ -37,7 +37,7 @@ SPHERICAL_OUTPUT_STEPS = range(0, 2000, 100)
         (CartesianScenario, CARTESIAN_OUTPUT_STEPS, 1),
         (CartesianScenario, CARTESIAN_OUTPUT_STEPS, 2),
         (CartesianScenario, CARTESIAN_OUTPUT_STEPS, 3),
-        (SphericalScenario, SPHERICAL_OUTPUT_STEPS, 1),  # TODO #59
+        (SphericalScenario, SPHERICAL_OUTPUT_STEPS, 1),  # TODO #56
     ),
 )
 @pytest.mark.parametrize("options_kwargs", OPTIONS_KWARGS)
