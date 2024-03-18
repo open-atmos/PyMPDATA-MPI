@@ -37,7 +37,7 @@ SPHERICAL_OUTPUT_STEPS = range(0, 2000, 100)
         (CartesianScenario, CARTESIAN_OUTPUT_STEPS, 1),
         (CartesianScenario, CARTESIAN_OUTPUT_STEPS, 2),
         (CartesianScenario, CARTESIAN_OUTPUT_STEPS, 3),
-        (SphericalScenario, SPHERICAL_OUTPUT_STEPS, 1),
+        (SphericalScenario, SPHERICAL_OUTPUT_STEPS, 1),  # TODO #59
     ),
 )
 @pytest.mark.parametrize("options_kwargs", OPTIONS_KWARGS)
@@ -60,8 +60,7 @@ def test_single_vs_multi_node(  # pylint: disable=too-many-arguments,too-many-br
     (which is simulation performed on single node environment)
 
     """
-    # pylint: disable=too-many-locals, no-member
-    print("numba.NUMBA_NUM_THREADS", numba.config.NUMBA_NUM_THREADS)
+    # pylint: disable=too-many-locals
     if scenario_class is SphericalScenario and options_kwargs["n_iters"] > 1:
         pytest.skip("TODO #56")
 
