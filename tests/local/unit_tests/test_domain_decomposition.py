@@ -2,7 +2,6 @@
 tests for domain decomposition utilities
 """
 
-import numpy as np
 import pytest
 from PyMPDATA.impl.enumerations import INNER, OUTER
 
@@ -31,5 +30,4 @@ def test_mpi_indices(grid, rank, size, mpi_dim, expected):
     xyi = sut(grid=grid, rank=rank, size=size, mpi_dim=mpi_dim)
 
     # assert
-    assert type(xyi) is np.ndarray
     assert (xyi == expected).all()

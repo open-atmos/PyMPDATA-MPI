@@ -1,12 +1,13 @@
-# pylint: disable=too-few-public-methods
 """ Provides base _Scenario base class that every scenario should inherit """
+
 from PyMPDATA import Solver
 from PyMPDATA.impl.enumerations import INNER, OUTER
 
 
-class _Scenario:
+class _Scenario:  # pylint: disable=too-few-public-methods
     """Base class for every Scenario. Provides logic for advance() function"""
 
+    # pylint: disable=too-many-arguments
     def __init__(self, *, mpi_dim, stepper, advectee, advector, g_factor=None):
         self.mpi_dim = mpi_dim
         self.solver = Solver(

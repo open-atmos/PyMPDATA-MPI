@@ -12,7 +12,7 @@ TAG_NO_THREADS = 0
 
 @lru_cache()
 def make_scalar_boundary_condition(
-    indexers, jit_flags, dimension_index, dtype, get_peer, mpi_dim
+    *, indexers, jit_flags, dimension_index, dtype, get_peer, mpi_dim
 ):
     """returns fill_halos() function for scalar boundary conditions.
     Provides default logic for scalar buffer filling. Notable arguments:
