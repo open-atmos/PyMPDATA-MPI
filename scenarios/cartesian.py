@@ -6,7 +6,7 @@ from PyMPDATA import ScalarField, Stepper, VectorField
 from PyMPDATA.boundary_conditions import Periodic
 from PyMPDATA.impl.enumerations import INNER, OUTER
 
-from PyMPDATA_MPI.domain_decomposition import MPI_DIM, mpi_indices
+from PyMPDATA_MPI.domain_decomposition import mpi_indices
 from PyMPDATA_MPI.mpi_periodic import MPIPeriodic
 from scenarios._scenario import _Scenario
 
@@ -25,16 +25,19 @@ class CartesianScenario(_Scenario):
         rank,
         size,
         courant_field_multiplier,
+        mpi_dim,
     ):
         # pylint: disable=too-many-locals, invalid-name
         halo = mpdata_options.n_halo
 
-        xyi = mpi_indices(grid, rank, size)
-        nx, ny = xyi[MPI_DIM].shape
+        xyi = mpi_indices(grid=grid, rank=rank, size=size, mpi_dim=mpi_dim)
+        nx, ny = xyi[mpi_dim].shape
 
+        mpi_periodic = MPIPeriodic(size=size, mpi_dim=mpi_dim)
+        periodic = Periodic()
         boundary_conditions = (
-            MPIPeriodic(size=size) if MPI_DIM == OUTER else Periodic(),
-            MPIPeriodic(size=size) if MPI_DIM == INNER else Periodic(),
+            mpi_periodic if mpi_dim == OUTER else periodic,
+            mpi_periodic if mpi_dim == INNER else periodic,
         )
         advectee = ScalarField(
             data=self.initial_condition(*xyi, grid),
@@ -57,13 +60,15 @@ class CartesianScenario(_Scenario):
             left_first=tuple([rank % 2 == 0] * 2),
             # TODO #70 (see also https://github.com/open-atmos/PyMPDATA/issues/386)
             buffer_size=(
-                (ny if MPI_DIM == OUTER else nx + 2 * halo) * halo
+                (ny if mpi_dim == OUTER else nx + 2 * halo) * halo
             )  # TODO #38 support for 3D domain
             * 2  # for temporary send/recv buffer on one side
             * 2  # for complex dtype
-            * (2 if MPI_DIM == OUTER else n_threads),
+            * (2 if mpi_dim == OUTER else n_threads),
         )
-        super().__init__(stepper=stepper, advectee=advectee, advector=advector)
+        super().__init__(
+            mpi_dim=mpi_dim, stepper=stepper, advectee=advectee, advector=advector
+        )
 
     @staticmethod
     def initial_condition(xi, yi, grid):

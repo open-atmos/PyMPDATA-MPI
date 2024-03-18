@@ -6,10 +6,11 @@ from PyMPDATA_MPI.impl.boundary_condition_commons import make_scalar_boundary_co
 class MPIBoundaryCondition:
     """common base class for MPI boundary conditions"""
 
-    def __init__(self, base, size):
+    def __init__(self, base, size, mpi_dim):
         self.__mpi_size_one = size == 1
         self.worker_pool_size = size
         self.base = base
+        self.mpi_dim = mpi_dim
 
     # pylint: disable=too-many-arguments
     def make_scalar(self, indexers, halo, dtype, jit_flags, dimension_index):
@@ -24,6 +25,7 @@ class MPIBoundaryCondition:
             dimension_index,
             dtype,
             self.make_get_peer(jit_flags, self.worker_pool_size),
+            self.mpi_dim,
         )
 
     @staticmethod

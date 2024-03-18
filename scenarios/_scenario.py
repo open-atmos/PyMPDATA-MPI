@@ -3,13 +3,12 @@
 from PyMPDATA import Solver
 from PyMPDATA.impl.enumerations import INNER, OUTER
 
-from PyMPDATA_MPI.domain_decomposition import MPI_DIM
-
 
 class _Scenario:
     """Base class for every Scenario. Provides logic for advance() function"""
 
-    def __init__(self, *, stepper, advectee, advector, g_factor=None):
+    def __init__(self, *, mpi_dim, stepper, advectee, advector, g_factor=None):
+        self.mpi_dim = mpi_dim
         self.solver = Solver(
             stepper=stepper, advectee=advectee, advector=advector, g_factor=g_factor
         )
@@ -27,8 +26,8 @@ class _Scenario:
             data = self.solver.advectee.get()
             dataset[
                 (
-                    mpi_range if MPI_DIM == OUTER else slice(None),
-                    mpi_range if MPI_DIM == INNER else slice(None),
+                    mpi_range if self.mpi_dim == OUTER else slice(None),
+                    mpi_range if self.mpi_dim == INNER else slice(None),
                     slice(index, index + 1),
                 )
             ] = data.reshape((data.shape[0], data.shape[1], 1))

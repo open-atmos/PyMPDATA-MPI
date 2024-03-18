@@ -11,8 +11,9 @@ import pytest
 from matplotlib import pyplot
 from mpi4py import MPI
 from PyMPDATA import Options
+from PyMPDATA.impl.enumerations import INNER, OUTER
 
-from PyMPDATA_MPI.domain_decomposition import MPI_DIM, subdomain
+from PyMPDATA_MPI.domain_decomposition import subdomain
 from PyMPDATA_MPI.hdf_storage import HDFStorage
 from PyMPDATA_MPI.utils import barrier_enclosed, setup_dataset_and_sync_all_workers
 from scenarios import CartesianScenario, SphericalScenario
@@ -42,7 +43,10 @@ SPHERICAL_OUTPUT_STEPS = range(0, 2000, 100)
 )
 @pytest.mark.parametrize("options_kwargs", OPTIONS_KWARGS)
 @pytest.mark.parametrize("courant_field_multiplier", COURANT_FIELD_MULTIPLIER)
+@pytest.mark.parametrize("mpi_dim", (INNER, OUTER))
 def test_single_vs_multi_node(  # pylint: disable=too-many-arguments,too-many-branches,too-many-statements
+    *,
+    mpi_dim,
     scenario_class,
     mpi_tmp_path_fixed,
     options_kwargs,
@@ -58,7 +62,6 @@ def test_single_vs_multi_node(  # pylint: disable=too-many-arguments,too-many-br
     Each iteration uses different domain decomposition.
     Last stage is responsible for comparing results to ground truth
     (which is simulation performed on single node environment)
-
     """
     # pylint: disable=too-many-locals
     if scenario_class is SphericalScenario and options_kwargs["n_iters"] > 1:
@@ -67,8 +70,14 @@ def test_single_vs_multi_node(  # pylint: disable=too-many-arguments,too-many-br
     if scenario_class is SphericalScenario and mpi.size() > 2:
         pytest.skip("TODO #56")
 
+    if scenario_class is SphericalScenario and mpi_dim == INNER:
+        pytest.skip("TODO #56")
+
     if n_threads > 1 and options_kwargs.get("nonoscillatory", False):
         pytest.skip("TODO #99")
+
+    if mpi_dim == INNER and options_kwargs.get("third_order_terms", False):
+        pytest.skip("TODO #102")
 
     if n_threads > 1 and numba.config.DISABLE_JIT:  # pylint: disable=no-member
         pytest.skip("threading requires Numba JIT to be enabled")
@@ -134,6 +143,7 @@ def test_single_vs_multi_node(  # pylint: disable=too-many-arguments,too-many-br
             dataset = setup_dataset_and_sync_all_workers(storage, dataset_name)
             if rank < truncated_size:
                 simulation = scenario_class(
+                    mpi_dim=mpi_dim,
                     mpdata_options=Options(**options_kwargs),
                     n_threads=n_threads,
                     grid=grid,
@@ -141,7 +151,9 @@ def test_single_vs_multi_node(  # pylint: disable=too-many-arguments,too-many-br
                     size=truncated_size,
                     courant_field_multiplier=courant_field_multiplier,
                 )
-                mpi_range = slice(*subdomain(grid[MPI_DIM], rank, truncated_size))
+                mpi_range = slice(
+                    *subdomain(grid[simulation.mpi_dim], rank, truncated_size)
+                )
 
                 simulation.advance(dataset, output_steps, mpi_range)
 
