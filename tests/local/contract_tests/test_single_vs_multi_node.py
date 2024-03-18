@@ -60,10 +60,8 @@ def test_single_vs_multi_node(  # pylint: disable=too-many-arguments,too-many-br
     (which is simulation performed on single node environment)
 
     """
-    # pylint: disable=too-many-locals
-    print(
-        "numba.NUMBA_NUM_THREADS", numba.config.NUMBA_NUM_THREADS
-    )  # pylint: disable=no-member
+    # pylint: disable=too-many-locals, no-member
+    print("numba.NUMBA_NUM_THREADS", numba.config.NUMBA_NUM_THREADS)
     if scenario_class is SphericalScenario and options_kwargs["n_iters"] > 1:
         pytest.skip("TODO #56")
 
