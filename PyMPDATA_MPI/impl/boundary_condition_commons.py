@@ -1,3 +1,4 @@
+# pylint: disable=too-many-arguments
 """ boundary_condition common functions """
 
 from functools import lru_cache
@@ -11,7 +12,7 @@ TAG_NO_THREADS = 0
 
 
 @lru_cache()
-def make_scalar_boundary_condition(  # pylint: disable=too-many-arguments
+def make_scalar_boundary_condition(
     *, indexers, jit_flags, dimension_index, dtype, get_peer, mpi_dim
 ):
     """returns fill_halos() function for scalar boundary conditions.
@@ -31,7 +32,6 @@ def make_scalar_boundary_condition(  # pylint: disable=too-many-arguments
         indexers.set, jit_flags, fill_buf, dtype, get_peer, mpi_dim
     )
 
-    # pylint: disable=too-many-arguments
     @numba.njit(**jit_flags)
     def fill_halos(buffer, i_rng, j_rng, k_rng, psi, _, sign):
         send_recv(buffer, psi, i_rng, j_rng, k_rng, sign, IRRELEVANT, psi)
@@ -39,9 +39,8 @@ def make_scalar_boundary_condition(  # pylint: disable=too-many-arguments
     return fill_halos
 
 
-# pylint: disable=too-many-arguments
 @lru_cache()
-def make_vector_boundary_condition(  # pylint: disable=too-many-arguments
+def make_vector_boundary_condition(
     indexers, halo, jit_flags, dimension_index, dtype, get_peer, mpi_dim
 ):
     """returns fill_halos() function for vector boundary conditions.
