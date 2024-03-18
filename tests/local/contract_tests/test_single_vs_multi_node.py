@@ -11,7 +11,6 @@ import pytest
 from matplotlib import pyplot
 from mpi4py import MPI
 from PyMPDATA import Options
-from PyMPDATA.impl.enumerations import INNER
 
 from PyMPDATA_MPI.domain_decomposition import MPI_DIM, subdomain
 from PyMPDATA_MPI.hdf_storage import HDFStorage
@@ -61,8 +60,10 @@ def test_single_vs_multi_node(  # pylint: disable=too-many-arguments,too-many-br
     (which is simulation performed on single node environment)
 
     """
-    print("numba.NUMBA_NUM_THREADS", numba.config.NUMBA_NUM_THREADS)
     # pylint: disable=too-many-locals
+    print(
+        "numba.NUMBA_NUM_THREADS", numba.config.NUMBA_NUM_THREADS
+    )  # pylint: disable=no-member
     if scenario_class is SphericalScenario and options_kwargs["n_iters"] > 1:
         pytest.skip("TODO #56")
 
@@ -82,7 +83,6 @@ def test_single_vs_multi_node(  # pylint: disable=too-many-arguments,too-many-br
             options_kwargs == OPTIONS_KWARGS[-1] or scenario_class is SphericalScenario
         )
     )
-
     # arrange
     options_str = (
         str(options_kwargs)
