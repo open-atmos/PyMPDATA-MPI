@@ -11,7 +11,7 @@ TAG_NO_THREADS = 0
 
 
 @lru_cache()
-def make_scalar_boundary_condition(
+def make_scalar_boundary_condition(  # pylint: disable=too-many-arguments
     *, indexers, jit_flags, dimension_index, dtype, get_peer, mpi_dim
 ):
     """returns fill_halos() function for scalar boundary conditions.
