@@ -8,7 +8,6 @@ import numba_mpi as mpi
 from PyMPDATA.impl.enumerations import INVALID_INDEX, OUTER
 
 IRRELEVANT = 666
-TAG_NO_THREADS = 0
 
 
 @lru_cache()
@@ -79,7 +78,6 @@ def make_vector_boundary_condition(
 
 
 def _make_send_recv(set_value, jit_flags, fill_buf, dtype, get_peer, mpi_dim):
-    n_threads = numba.get_num_threads()
 
     @numba.njit(**jit_flags)
     def get_buffer_chunk(buffer, i_rng, k_rng, chunk_index):
@@ -109,18 +107,15 @@ def _make_send_recv(set_value, jit_flags, fill_buf, dtype, get_peer, mpi_dim):
 
     @numba.njit(**jit_flags)
     def _send(buf, peer, fill_buf_args):
-        tag = TAG_NO_THREADS if n_threads == 1 else numba.get_thread_id()
+        tag = numba.get_thread_id()
         fill_buf(buf, *fill_buf_args)
         mpi.send(buf, dest=peer, tag=tag)
 
     @numba.njit(**jit_flags)
     def _recv(buf, peer):
-        if n_threads == 1:
-            tag = TAG_NO_THREADS
-        else:
-            th_id = numba.get_thread_id()
-            n_th = numba.get_num_threads()
-            tag = th_id if mpi_dim != OUTER else {0: n_th - 1, n_th - 1: 0}[th_id]
+        th_id = numba.get_thread_id()
+        n_th = numba.get_num_threads()
+        tag = th_id if mpi_dim != OUTER else {0: n_th - 1, n_th - 1: 0}[th_id]
         mpi.recv(buf, source=peer, tag=tag)
 
     @numba.njit(**jit_flags)
