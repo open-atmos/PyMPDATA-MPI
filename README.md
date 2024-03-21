@@ -80,14 +80,6 @@ In this example, two corrective MPDATA iterations are employed.
   <img src="https://github.com/open-atmos/PyMPDATA-MPI/releases/download/latest-generated-plots/n_iters.3_rank_2_size_3_c_field_.0.5.0.25.-CartesianScenario-anim.gif" width="32%" />
 </p>
 
-### 4 workers
-<p align="middle">
-  <img src="https://github.com/open-atmos/PyMPDATA-MPI/releases/download/latest-generated-plots/n_iters.3_rank_0_size_4_c_field_.0.5.0.25.-CartesianScenario-anim.gif" width="24%" />
-  <img src="https://github.com/open-atmos/PyMPDATA-MPI/releases/download/latest-generated-plots/n_iters.3_rank_1_size_4_c_field_.0.5.0.25.-CartesianScenario-anim.gif" width="24%" />
-  <img src="https://github.com/open-atmos/PyMPDATA-MPI/releases/download/latest-generated-plots/n_iters.3_rank_2_size_4_c_field_.0.5.0.25.-CartesianScenario-anim.gif" width="24%" />
-  <img src="https://github.com/open-atmos/PyMPDATA-MPI/releases/download/latest-generated-plots/n_iters.3_rank_3_size_4_c_field_.0.5.0.25.-CartesianScenario-anim.gif" width="24%" />
-</p>
-
 ## Package architecture
 
 ```mermaid
