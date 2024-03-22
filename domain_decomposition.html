@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.10.0" />
 <title>PyMPDATA_MPI.domain_decomposition API documentation</title>
-<meta name="description" content="" />
+<meta name="description" content="MPI-aware domain decomposition utilities" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
 <link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
@@ -22,26 +22,28 @@
 <h1 class="title">Module <code>PyMPDATA_MPI.domain_decomposition</code></h1>
 </header>
 <section id="section-intro">
+<p>MPI-aware domain decomposition utilities</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python"># pylint: disable=missing-module-docstring,missing-function-docstring,missing-class-docstring,invalid-name
+<pre><code class="python">&#34;&#34;&#34; MPI-aware domain decomposition utilities &#34;&#34;&#34;
 
 import numpy as np
 from PyMPDATA.impl.domain_decomposition import make_subdomain
-from PyMPDATA.impl.enumerations import OUTER
-
-MPI_DIM = OUTER
 
 subdomain = make_subdomain(jit_flags={})
 
 
-def mpi_indices(grid, rank, size):
-    start, stop = subdomain(grid[MPI_DIM], rank, size)
-    xi, yi = np.indices((stop - start, grid[MPI_DIM - 1]), dtype=float)
-    xi += start
-    return xi, yi</code></pre>
+def mpi_indices(*, grid, rank, size, mpi_dim):
+    &#34;&#34;&#34;returns a mapping from rank-local indices to domain-wide indices,
+    (subdomain-aware equivalent of np.indices)&#34;&#34;&#34;
+    start, stop = subdomain(grid[mpi_dim], rank, size)
+    indices_arg = list(grid)
+    indices_arg[mpi_dim] = stop - start
+    xyi = np.indices(tuple(indices_arg), dtype=float)
+    xyi[mpi_dim] += start
+    return xyi</code></pre>
 </details>
 </section>
 <section>
@@ -52,19 +54,24 @@ def mpi_indices(grid, rank, size):
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="PyMPDATA_MPI.domain_decomposition.mpi_indices"><code class="name flex">
-<span>def <span class="ident">mpi_indices</span></span>(<span>grid, rank, size)</span>
+<span>def <span class="ident">mpi_indices</span></span>(<span>*, grid, rank, size, mpi_dim)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>returns a mapping from rank-local indices to domain-wide indices,
+(subdomain-aware equivalent of np.indices)</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def mpi_indices(grid, rank, size):
-    start, stop = subdomain(grid[MPI_DIM], rank, size)
-    xi, yi = np.indices((stop - start, grid[MPI_DIM - 1]), dtype=float)
-    xi += start
-    return xi, yi</code></pre>
+<pre><code class="python">def mpi_indices(*, grid, rank, size, mpi_dim):
+    &#34;&#34;&#34;returns a mapping from rank-local indices to domain-wide indices,
+    (subdomain-aware equivalent of np.indices)&#34;&#34;&#34;
+    start, stop = subdomain(grid[mpi_dim], rank, size)
+    indices_arg = list(grid)
+    indices_arg[mpi_dim] = stop - start
+    xyi = np.indices(tuple(indices_arg), dtype=float)
+    xyi[mpi_dim] += start
+    return xyi</code></pre>
 </details>
 </dd>
 </dl>
