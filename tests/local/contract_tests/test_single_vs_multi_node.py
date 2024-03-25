@@ -127,7 +127,8 @@ def test_single_vs_multi_node(  # pylint: disable=too-many-arguments,too-many-br
                 Path(os.environ["CI_PLOTS_PATH"])
                 / Path(scenario_class.__name__)
                 / Path(
-                    f"{options_str}_rank_{mpi.rank()}_size_{truncated_size}_c_field_{courant_str}_mpi_dim_{mpi_dim}"
+                    f"{options_str}_rank_{mpi.rank()}_size_{truncated_size}"
+                    f"_c_field_{courant_str}_mpi_dim_{mpi_dim}"
                 )
             )
             shutil.rmtree(plot_path, ignore_errors=True)
