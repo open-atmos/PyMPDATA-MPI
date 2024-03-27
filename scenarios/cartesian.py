@@ -107,9 +107,14 @@ class CartesianScenario(_Scenario):
         ax.set_proj_type("ortho")
 
         if n_threads > 1 and not numba.config.DISABLE_JIT:  # pylint: disable=no-member
-            finite = np.isfinite(psi[0, :])
-            span = sum(finite)
-            zero = np.argmax(finite > 0)
+            first_i_with_finite_values = -1
+            for i in range(psi.shape[0]):
+                if sum(np.isfinite(psi[i, :])) > 0:
+                    first_i_with_finite_values = i
+            finite_slice = np.isfinite(psi[first_i_with_finite_values, :])
+            span = sum(finite_slice)
+            assert span != 0
+            zero = np.argmax(finite_slice > 0)
             for i in range(n_threads):
                 start, stop = subdomain(span, i, n_threads)
                 kwargs = {"zs": -1, "zdir": "z", "color": "black", "linestyle": ":"}
