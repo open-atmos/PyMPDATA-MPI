@@ -1,14 +1,20 @@
 """ 2D constant-advector carthesian example """
 
+import numba
 import numpy as np
 from matplotlib import pyplot
+
 from PyMPDATA import ScalarField, Stepper, VectorField
 from PyMPDATA.boundary_conditions import Periodic
 from PyMPDATA.impl.enumerations import INNER, OUTER
+from PyMPDATA.impl.domain_decomposition import make_subdomain
 
 from PyMPDATA_MPI.domain_decomposition import mpi_indices
 from PyMPDATA_MPI.mpi_periodic import MPIPeriodic
 from scenarios._scenario import _Scenario
+
+
+subdomain = make_subdomain(jit_flags={})
 
 
 class CartesianScenario(_Scenario):
@@ -85,7 +91,7 @@ class CartesianScenario(_Scenario):
         return psi
 
     @staticmethod
-    def quick_look(psi, zlim=(-1, 1), norm=None):
+    def quick_look(psi, n_threads, zlim=(-1, 1), norm=None):
         """plots the passed advectee field"""
         # pylint: disable=invalid-name
         xi, yi = np.indices(psi.shape)
@@ -101,6 +107,19 @@ class CartesianScenario(_Scenario):
         ax.set_xlabel("x/dx")
         ax.set_ylabel("y/dy")
         ax.set_proj_type("ortho")
+
+        if n_threads > 1 and not numba.config.DISABLE_JIT:
+            finite = np.isfinite(psi[0, :])
+            span = sum(finite)
+            zero = np.argmax(finite > 0)
+            for i in range(n_threads):
+                start, stop = subdomain(span, i, n_threads)
+                kwargs = {'zs': -1, 'zdir': 'z', 'color': 'black', 'linestyle': ':'}
+                x = [0, psi.shape[0] - 1]
+                ax.plot(x, [zero + start]*2, **kwargs)
+                if i == n_threads - 1:
+                    ax.plot(x, [zero + stop]*2, **kwargs)
+
         cnt = ax.contourf(
             xi + 0.5,
             yi + 0.5,
@@ -109,6 +128,8 @@ class CartesianScenario(_Scenario):
             offset=-1,
             norm=norm,
             levels=np.linspace(*zlim, 11),
+            alpha=.75
         )
         cbar = pyplot.colorbar(cnt, pad=0.1, aspect=10, fraction=0.04)
+
         return cbar.norm

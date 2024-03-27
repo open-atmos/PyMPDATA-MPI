@@ -169,7 +169,7 @@ def test_single_vs_multi_node(  # pylint: disable=too-many-arguments,too-many-br
                         tmp[tuple(ranges)] = dataset[
                             tuple([*ranges, slice(i, i + 1)])
                         ].squeeze()
-                        simulation.quick_look(tmp)
+                        simulation.quick_look(tmp, n_threads)
 
                         filename = f"step={i:04d}.svg"
                         pyplot.savefig(plot_path / filename)
