@@ -91,7 +91,7 @@ class CartesianScenario(_Scenario):
     @staticmethod
     def quick_look(psi, n_threads, zlim=(-1, 1), norm=None):
         """plots the passed advectee field"""
-        # pylint: disable=invalid-name
+        # pylint: disable=invalid-name,too-many-locals
         xi, yi = np.indices(psi.shape)
         _, ax = pyplot.subplots(subplot_kw={"projection": "3d"})
         pyplot.gca().plot_wireframe(xi + 0.5, yi + 0.5, psi, color="red", linewidth=0.5)
@@ -106,7 +106,7 @@ class CartesianScenario(_Scenario):
         ax.set_ylabel("y/dy")
         ax.set_proj_type("ortho")
 
-        if n_threads > 1 and not numba.config.DISABLE_JIT:
+        if n_threads > 1 and not numba.config.DISABLE_JIT:  # pylint: disable=no-member
             finite = np.isfinite(psi[0, :])
             span = sum(finite)
             zero = np.argmax(finite > 0)
