@@ -110,7 +110,7 @@ jobs:
         - uses: actions/setup-python@v1
           with:
             python-version: ${{ matrix.python-version }}
-        - run: echo pip_user_site=$(python -m site --user-site) >> $GITHUB_ENV
+        - run: echo pip_user_site=$(python -c "import sysconfig; print(sysconfig.get_path('purelib'))") >> $GITHUB_ENV
         - id: cache
           uses: actions/cache@v4
           with:
@@ -139,7 +139,7 @@ jobs:
           run: |
             HDF5_MPI="ON" CC=mpicc pip install --no-binary=h5py h5py==3.10.0
             pip install -e .[tests]
-        - run: echo ${{ env.pip_user_site }}
+        - run: pip show numpy
         - id: cache-save
           uses: actions/cache/save@v4
           with:
