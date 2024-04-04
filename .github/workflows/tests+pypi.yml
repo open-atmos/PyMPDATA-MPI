@@ -137,7 +137,7 @@ jobs:
             sysctl -a | grep cpu | grep hw
         - if: steps.cache.outputs.cache-hit != 'true'
           run: |
-            HDF5_MPI="ON" CC=mpicc pip install --no-binary=h5py "git+https://github.com/h5py/h5py@81f6c01#egg=h5py"
+            HDF5_MPI="ON" CC=mpicc pip install --no-binary=h5py h5py==3.10.0
             pip install -e .[tests]
 
   tests:
@@ -183,19 +183,9 @@ jobs:
       - if: matrix.mpi == 'mpich'
         run: echo _ch="ch" >> $GITHUB_ENV
       - if: startsWith(matrix.platform, 'ubuntu-')
-        run: |
-          sudo apt-get update && sudo apt-get install -y libhdf5-mpi$_ch-dev pkg-config
-          lscpu
-#      - if: startsWith(matrix.platform, 'ubuntu-') && matrix.mpi == 'mpich'
-#        run: |
-#          echo HDF5_LIBDIR=/usr/lib/x86_64-linux-gnu/hdf5/mpich >> $GITHUB_ENV
-#          echo HDF5_INCLUDEDIR=/usr/include/hdf5/mpich >> $GITHUB_ENV
+        run: sudo apt-get update && sudo apt-get install -y libhdf5-mpi$_ch-dev pkg-config
       - if: startsWith(matrix.platform, 'macos-')
-        run: | 
-          brew install hdf5-mpi && echo HDF5_DIR=/opt/homebrew >> $GITHUB_ENV
-          sysctl -a | grep cpu | grep hw
-#      - run: HDF5_MPI="ON" CC=mpicc pip install --no-binary=h5py "git+https://github.com/h5py/h5py@81f6c01#egg=h5py"
-#      - run: pip install -e .[tests]
+        run: brew install hdf5-mpi && echo HDF5_DIR=/opt/homebrew >> $GITHUB_ENV
       - run: python -We -c "import PyMPDATA_MPI"
       - if: matrix.mpi == 'openmpi'
         run: echo _mpiexec_args="--oversubscribe" >> $GITHUB_ENV
