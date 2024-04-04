@@ -112,7 +112,7 @@ jobs:
             python-version: ${{ matrix.python-version }}
         - run: echo pip_user_site=$(python -m site --user-site) >> $GITHUB_ENV
         - id: cache
-          uses: actions/cache/save@v4
+          uses: actions/cache@v4
           with:
             path: ${{ env.pip_user_site }}
             key: ${{ matrix.platform }}-${{ matrix.mpi }}-${{ matrix.python-version }}
@@ -139,6 +139,11 @@ jobs:
           run: |
             HDF5_MPI="ON" CC=mpicc pip install --no-binary=h5py h5py==3.10.0
             pip install -e .[tests]
+        - id: cache-save
+          uses: actions/cache/save@v4
+          with:
+            path: ${{ env.pip_user_site }}
+            key: ${{ matrix.platform }}-${{ matrix.mpi }}-${{ matrix.python-version }}
 
   tests:
     needs: [zenodo_json, pylint, pdoc, precommit, tests_setup]
