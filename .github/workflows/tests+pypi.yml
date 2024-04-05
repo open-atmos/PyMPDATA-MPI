@@ -199,6 +199,7 @@ jobs:
         env:
           NUMBA_DISABLE_JIT: ${{ matrix.disable-jit }} 
         run: |
+          pip show pytest
           if [ "$animation_run" == "${{ matrix.python-version }}/${{ matrix.platform }}/${{ matrix.disable-jit }}/${{ matrix.mpi }}" ]; then
             export CI_PLOTS_PATH=plots/$animation_run
             mkdir -p $CI_PLOTS_PATH
