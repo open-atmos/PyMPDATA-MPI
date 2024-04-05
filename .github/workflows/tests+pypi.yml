@@ -196,6 +196,7 @@ jobs:
         run: |
           echo HDF5_LIBDIR=/usr/lib/x86_64-linux-gnu/hdf5/mpich >> $GITHUB_ENV
           echo HDF5_INCLUDEDIR=/usr/include/hdf5/mpich >> $GITHUB_ENV
+      - run: pip install -e .[tests]
       - run: python -We -c "import PyMPDATA_MPI"
       - if: matrix.mpi == 'openmpi'
         run: echo _mpiexec_args="--oversubscribe" >> $GITHUB_ENV
