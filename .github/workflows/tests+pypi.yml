@@ -197,6 +197,7 @@ jobs:
         with:
           path: ${{ env.pip_user_site }}
           key: ${{ matrix.platform }}-${{ matrix.mpi }}-${{ matrix.python-version }}
+      - run: PATH=$PATH:${{ env.pip_user_site }}
       - run: python -We -c "import PyMPDATA_MPI"
       - if: matrix.mpi == 'openmpi'
         run: echo _mpiexec_args="--oversubscribe" >> $GITHUB_ENV
@@ -204,6 +205,7 @@ jobs:
         env:
           NUMBA_DISABLE_JIT: ${{ matrix.disable-jit }} 
         run: |
+          echo $PATH
           pip show pytest
           if [ "$animation_run" == "${{ matrix.python-version }}/${{ matrix.platform }}/${{ matrix.disable-jit }}/${{ matrix.mpi }}" ]; then
             export CI_PLOTS_PATH=plots/$animation_run
