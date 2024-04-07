@@ -191,7 +191,7 @@ jobs:
         run: |
           echo HDF5_LIBDIR=/usr/lib/x86_64-linux-gnu/hdf5/mpich >> $GITHUB_ENV
           echo HDF5_INCLUDEDIR=/usr/include/hdf5/mpich >> $GITHUB_ENV
-      - run: pip install -e .[tests]
+      #- run: pip install -e .[tests]
       - id: cache
         uses: actions/cache/restore@v4
         with:
