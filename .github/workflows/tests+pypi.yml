@@ -181,11 +181,6 @@ jobs:
       - uses: mpi4py/setup-mpi@v1
         with:
           mpi: ${{ matrix.mpi }}
-#      - id: cache
-#        uses: actions/cache/restore@v4
-#        with:
-#          path: ${{ env.pip_user_site }}
-#          key: ${{ matrix.platform }}-${{ matrix.mpi }}-${{ matrix.python-version }}
       - if: matrix.mpi == 'mpich'
         run: echo _ch="ch" >> $GITHUB_ENV
       - if: startsWith(matrix.platform, 'ubuntu-')
@@ -197,6 +192,11 @@ jobs:
           echo HDF5_LIBDIR=/usr/lib/x86_64-linux-gnu/hdf5/mpich >> $GITHUB_ENV
           echo HDF5_INCLUDEDIR=/usr/include/hdf5/mpich >> $GITHUB_ENV
       - run: pip install -e .[tests]
+      - id: cache
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ env.pip_user_site }}
+          key: ${{ matrix.platform }}-${{ matrix.mpi }}-${{ matrix.python-version }}
       - run: python -We -c "import PyMPDATA_MPI"
       - if: matrix.mpi == 'openmpi'
         run: echo _mpiexec_args="--oversubscribe" >> $GITHUB_ENV
