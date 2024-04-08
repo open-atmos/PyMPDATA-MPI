@@ -81,7 +81,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e .[tests]
           pip install pylint pytest matplotlib
-          which pytest
       - name: Analysing the code with pylint
         run: |
           pylint --unsafe-load-any-extension=y --disable=fixme $(git ls-files '*.py')
@@ -182,6 +181,11 @@ jobs:
       - uses: mpi4py/setup-mpi@v1
         with:
           mpi: ${{ matrix.mpi }}
+      - id: cache
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ env.pip_user_site }}
+          key: ${{ matrix.platform }}-${{ matrix.mpi }}-${{ matrix.python-version }}
       - if: matrix.mpi == 'mpich'
         run: echo _ch="ch" >> $GITHUB_ENV
       - if: startsWith(matrix.platform, 'ubuntu-')
@@ -192,12 +196,6 @@ jobs:
         run: |
           echo HDF5_LIBDIR=/usr/lib/x86_64-linux-gnu/hdf5/mpich >> $GITHUB_ENV
           echo HDF5_INCLUDEDIR=/usr/include/hdf5/mpich >> $GITHUB_ENV
-      #- run: pip install -e .[tests]
-      - id: cache
-        uses: actions/cache/restore@v4
-        with:
-          path: ${{ env.pip_user_site }}
-          key: ${{ matrix.platform }}-${{ matrix.mpi }}-${{ matrix.python-version }}
       - run: PATH=$PATH:${{ env.pip_user_site }}
       - run: python -We -c "import PyMPDATA_MPI"
       - if: matrix.mpi == 'openmpi'
@@ -206,8 +204,6 @@ jobs:
         env:
           NUMBA_DISABLE_JIT: ${{ matrix.disable-jit }} 
         run: |
-          echo $PATH
-          pip show pytest
           if [ "$animation_run" == "${{ matrix.python-version }}/${{ matrix.platform }}/${{ matrix.disable-jit }}/${{ matrix.mpi }}" ]; then
             export CI_PLOTS_PATH=plots/$animation_run
             mkdir -p $CI_PLOTS_PATH
@@ -217,8 +213,7 @@ jobs:
             export COV_ARGS="--cov=./ --cov-report=xml"
             pip install pytest-cov
           fi
-          pytest -s -vv -We tests/local
-          NUMBA_NUM_THREADS=3 mpiexec $_mpiexec_args -n ${{ matrix.mpi-np }} pytest $COV_ARGS --timeout=600 --timeout_method=thread -s -vv -We tests/local;
+          NUMBA_NUM_THREADS=3 mpiexec $_mpiexec_args -n ${{ matrix.mpi-np }} python -m pytest $COV_ARGS --timeout=600 --timeout_method=thread -s -vv -We tests/local;
       - uses: actions/upload-artifact@v2
         with:
           name: plots
