@@ -110,12 +110,14 @@ jobs:
         - uses: actions/setup-python@v1
           with:
             python-version: ${{ matrix.python-version }}
-        - run: echo pip_user_site=$(python -c "import sysconfig; print(sysconfig.get_path('purelib'))") >> $GITHUB_ENV
+        - run: |
+            echo pip_user_site=$(python -c "import sysconfig; print(sysconfig.get_path('purelib'))") >> $GITHUB_ENV
+            echo toml_ci_md5=$(cat pyproject.toml .github/workflows/tests+pypi.yml | md5) >> $GITHUB_ENV
         - id: cache
           uses: actions/cache@v4
           with:
             path: ${{ env.pip_user_site }}
-            key: ${{ matrix.platform }}-${{ matrix.mpi }}-${{ matrix.python-version }}
+            key: ${{ matrix.platform }}-${{ matrix.mpi }}-${{ matrix.python-version }}-${{ env.toml_ci_md5 }}
 
         - if: steps.cache.outputs.cache-hit != 'true'
           uses: mpi4py/setup-mpi@v1
@@ -144,7 +146,7 @@ jobs:
           uses: actions/cache/save@v4
           with:
             path: ${{ env.pip_user_site }}
-            key: ${{ matrix.platform }}-${{ matrix.mpi }}-${{ matrix.python-version }}
+            key: ${{ matrix.platform }}-${{ matrix.mpi }}-${{ matrix.python-version }}-${{ env.toml_ci_md5 }}
 
   tests:
     needs: [zenodo_json, pylint, pdoc, precommit, tests_setup]
@@ -177,7 +179,9 @@ jobs:
       - uses: actions/setup-python@v1
         with:
           python-version: ${{ matrix.python-version }}
-      - run: echo pip_user_site=$(python -c "import sysconfig; print(sysconfig.get_path('purelib'))") >> $GITHUB_ENV
+      - run: |
+          echo pip_user_site=$(python -c "import sysconfig; print(sysconfig.get_path('purelib'))") >> $GITHUB_ENV
+          echo toml_ci_md5=$(cat pyproject.toml .github/workflows/tests+pypi.yml | md5) >> $GITHUB_ENV
       - uses: mpi4py/setup-mpi@v1
         with:
           mpi: ${{ matrix.mpi }}
@@ -185,7 +189,7 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: ${{ env.pip_user_site }}
-          key: ${{ matrix.platform }}-${{ matrix.mpi }}-${{ matrix.python-version }}
+          key: ${{ matrix.platform }}-${{ matrix.mpi }}-${{ matrix.python-version }}-${{ env.toml_ci_md5 }}
       - if: matrix.mpi == 'mpich'
         run: echo _ch="ch" >> $GITHUB_ENV
       - if: startsWith(matrix.platform, 'ubuntu-')
@@ -240,7 +244,7 @@ jobs:
       - run: |
           unset CI
           python -m build 2>&1 | tee build.log
-          exit `fgrep -i warning build.log | wc -l`
+          exit `fgrep -i warning build.log | grep -v "WARNING setuptools_scm" | wc -l`
 
       - run: twine check --strict dist/*
 
