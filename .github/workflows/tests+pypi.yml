@@ -80,7 +80,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -e .[tests]
-          pip install pylint pytest matplotlib
+          pip install pylint "pytest<8.2" matplotlib
       - name: Analysing the code with pylint
         run: |
           pylint --unsafe-load-any-extension=y --disable=fixme $(git ls-files '*.py')
