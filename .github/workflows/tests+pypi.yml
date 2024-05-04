@@ -80,7 +80,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -e .[tests]
-          pip install pylint "pytest<8.1.2" matplotlib
+          pip install pylint pytest matplotlib
       - name: Analysing the code with pylint
         run: |
           pylint --unsafe-load-any-extension=y --disable=fixme $(git ls-files '*.py')
@@ -215,7 +215,7 @@ jobs:
             export COV_ARGS="--cov=PyMPDATA-MPI --cov=examples --cov=scenarios --cov-report=xml"
             pip install pytest-cov
           fi
-          NUMBA_NUM_THREADS=3 mpiexec $_mpiexec_args -n ${{ matrix.mpi-np }} python -m pytest $COV_ARGS --timeout=600 --timeout_method=thread -s -vv -We tests/local;
+          NUMBA_NUM_THREADS=3 mpiexec $_mpiexec_args -n ${{ matrix.mpi-np }} python -m pytest -p no:cacheprovider $COV_ARGS --timeout=600 --timeout_method=thread -s -vv -We tests/local;
       - uses: actions/upload-artifact@v2
         with:
           name: plots
