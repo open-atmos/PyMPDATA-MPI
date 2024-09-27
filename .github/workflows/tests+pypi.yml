@@ -289,7 +289,8 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: plots
+          pattern: plots-*
+          merge-multiple: true
           path: plots
       - run: |
           sudo apt install -y librsvg2-bin
@@ -308,8 +309,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          pattern: plots-*
-          merge-multiple: true
+          name: anims
           path: plots/*-anim.gif
 
       - if: github.ref == 'refs/heads/main'
