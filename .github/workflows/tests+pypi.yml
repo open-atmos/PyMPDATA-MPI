@@ -95,8 +95,8 @@ jobs:
           # as of time of writing, mpi4py/setup-mpi does not support it
           - platform: macos-12
             mpi: intelmpi
-	  - platform: macos-12
-	    python-version: "3.12"
+          - platform: macos-12
+            python-version: "3.12"
           # issues with: *** The MPI_Comm_rank() function was called before MPI_INIT was invoked.
           - platform: ubuntu-latest
             mpi: intelmpi
@@ -164,8 +164,8 @@ jobs:
           # as of time of writing, mpi4py/setup-mpi does not support it
           - platform: macos-12
             mpi: intelmpi
-	  - platform: macos-12
-	    python-version: "3.12"
+          - platform: macos-12
+            python-version: "3.12"
 
           # issues with: *** The MPI_Comm_rank() function was called before MPI_INIT was invoked.
           - platform: ubuntu-latest
