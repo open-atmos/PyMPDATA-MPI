@@ -26,10 +26,10 @@ classifiers = [
 ]
 dependencies = [
     # TODO #94
-    "numba==0.59.1",
-    "numpy==1.26.4",
+    "numba",
+    "numpy",
     "numba_mpi>=0.30",
-    "PyMPDATA==1.0.16",
+    "PyMPDATA==1.2.4",
     "mpi4py",
     "h5py",
 ]
