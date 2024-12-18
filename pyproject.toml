@@ -2,6 +2,8 @@
 py-modules = []
 
 [tool.setuptools_scm]
+local_scheme = "no-local-version"
+version_scheme = "post-release"
 
 [build-system]
 requires = ['setuptools==69.1.0', 'setuptools-scm==7.1.0']
