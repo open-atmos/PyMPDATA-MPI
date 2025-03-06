@@ -1,5 +1,5 @@
 [tool.setuptools]
-packages = ["PyMPDATA_MPI"]
+packages = ["PyMPDATA_MPI", "PyMPDATA_MPI.impl"]
 
 [tool.setuptools_scm]
 local_scheme = "no-local-version"
