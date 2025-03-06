@@ -1,5 +1,5 @@
 # pylint: disable=too-many-positional-arguments,too-many-arguments
-""" boundary_condition common functions """
+"""boundary_condition common functions"""
 
 from functools import lru_cache
 
