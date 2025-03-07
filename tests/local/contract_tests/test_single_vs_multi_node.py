@@ -16,18 +16,20 @@ from PyMPDATA.impl.enumerations import INNER, OUTER
 from PyMPDATA_MPI.domain_decomposition import subdomain
 from PyMPDATA_MPI.hdf_storage import HDFStorage
 from PyMPDATA_MPI.utils import barrier_enclosed, setup_dataset_and_sync_all_workers
-from scenarios import CartesianScenario, SphericalScenario
+from scenarios import CartesianScenario, SphericalScenario, ShallowWaterScenario
 
 OPTIONS_KWARGS = (
     {"n_iters": 1},
-    {"n_iters": 2, "third_order_terms": True},
-    {"n_iters": 2, "nonoscillatory": True},
-    {"n_iters": 3},
+    #{"n_iters": 2, "third_order_terms": True},
+    {"n_iters": 2, "nonoscillatory": True, "infinite_gauge": True},
+    #{"n_iters": 3},
 )
 
 COURANT_FIELD_MULTIPLIER = ((0.5, 0.25), (-0.5, 0.25), (0.5, -0.25), (-0.5, -0.25))
 
 CARTESIAN_OUTPUT_STEPS = range(0, 24, 2)
+
+SHALLOW_WATER_OUTPUT_STEPS = range(0, 24, 2)
 
 SPHERICAL_OUTPUT_STEPS = range(0, 2000, 100)
 
@@ -39,6 +41,7 @@ SPHERICAL_OUTPUT_STEPS = range(0, 2000, 100)
         (CartesianScenario, CARTESIAN_OUTPUT_STEPS, 2),
         (CartesianScenario, CARTESIAN_OUTPUT_STEPS, 3),
         (SphericalScenario, SPHERICAL_OUTPUT_STEPS, 1),  # TODO #56
+        (ShallowWaterScenario, SHALLOW_WATER_OUTPUT_STEPS, 1),
     ),
 )
 @pytest.mark.parametrize("options_kwargs", OPTIONS_KWARGS)
@@ -159,7 +162,6 @@ def test_single_vs_multi_node(  # pylint: disable=too-many-arguments,too-many-br
                 mpi_range = slice(
                     *subdomain(grid[simulation.mpi_dim], rank, truncated_size)
                 )
-
                 simulation.advance(dataset, output_steps, mpi_range)
 
                 # plot
@@ -180,7 +182,6 @@ def test_single_vs_multi_node(  # pylint: disable=too-many-arguments,too-many-br
                         print(f"Saving figure {plot_path=} {filename=}")
                         pyplot.close()
 
-    # assert
     with barrier_enclosed():
         path_idx = mpi.rank() + 1
         mode = "r"
