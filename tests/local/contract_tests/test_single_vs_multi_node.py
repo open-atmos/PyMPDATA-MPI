@@ -1,4 +1,4 @@
-""" test for asserting equivalence of results from single node environment and multi-node one """
+"""test for asserting equivalence of results from single node environment and multi-node one"""
 
 import os
 import shutil
