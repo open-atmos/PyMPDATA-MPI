@@ -136,7 +136,7 @@ jobs:
             echo HDF5_INCLUDEDIR=/usr/include/hdf5/mpich >> $GITHUB_ENV
         - if: steps.cache.outputs.cache-hit != 'true' && startsWith(matrix.platform, 'macos-')
           run: |
-            brew install hdf5-mpi && echo HDF5_DIR=/opt/homebrew/Cellar/hdf5/1.14.6 >> $GITHUB_ENV
+            brew install hdf5-mpi && echo HDF5_DIR=/opt/homebrew/opt/hdf5-mpi >> $GITHUB_ENV
             echo CPATH=/opt/homebrew/include/ >> $GITHUB_ENV
             sysctl -a | grep cpu | grep hw
         - if: steps.cache.outputs.cache-hit != 'true'
