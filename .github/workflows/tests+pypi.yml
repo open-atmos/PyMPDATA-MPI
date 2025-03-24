@@ -149,7 +149,8 @@ jobs:
           with:
             path: ${{ env.pip_user_site }}
             key: ${{ matrix.platform }}-${{ matrix.mpi }}-${{ matrix.python-version }}-${{ env.toml_ci_md5 }}
-
+        - if: ${{ failure() }}
+         uses: mxschmitt/action-tmate@v3
   tests:
     needs: [zenodo_json, pylint, pdoc, precommit, tests_setup]
     strategy:
