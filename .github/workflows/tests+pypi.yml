@@ -138,10 +138,8 @@ jobs:
           uses: mxschmitt/action-tmate@v3
         - if: steps.cache.outputs.cache-hit != 'true' && startsWith(matrix.platform, 'macos-')
           run: |
-            brew install hdf5-mpi && echo HDF5_DIR="$(brew --prefix hdf5)" >> $GITHUB_ENV
-            brew link --force hdf5-mpi
-            echo CPATH=/opt/homebrew/include/ >> $GITHUB_ENV
-            sysctl -a | grep cpu | grep hw        
+            brew install hdf5-mpi && echo HDF5_DIR="$(brew --cellar hdf5-mpi)/$(brew list --versions hdf5-mpi | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+')" >> $GITHUB_ENV
+            sysctl -a | grep cpu | grep hw
         - if: steps.cache.outputs.cache-hit != 'true'
           run: |
             HDF5_MPI="ON" CC=mpicc pip install --no-binary=h5py h5py==3.13.0
