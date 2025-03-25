@@ -142,6 +142,8 @@ jobs:
           run: |
             HDF5_MPI="ON" CC=mpicc pip install --no-binary=h5py h5py==3.13.0
             pip install -e .[tests]
+        - if: steps.cache.outputs.cache-hit != 'true' && startsWith(matrix.platform, 'macos-')
+          uses: mxschmitt/action-tmate@v3
         - run: pip show numpy
         - id: cache-save
           if: steps.cache.outputs.cache-hit != 'true'
@@ -149,8 +151,8 @@ jobs:
           with:
             path: ${{ env.pip_user_site }}
             key: ${{ matrix.platform }}-${{ matrix.mpi }}-${{ matrix.python-version }}-${{ env.toml_ci_md5 }}
-        - if: ${{ failure() }}
-          uses: mxschmitt/action-tmate@v3
+        # - if: ${{ failure() }}
+        #   uses: mxschmitt/action-tmate@v3
          
   tests:
     needs: [zenodo_json, pylint, pdoc, precommit, tests_setup]
