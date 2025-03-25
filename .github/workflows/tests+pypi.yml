@@ -134,6 +134,7 @@ jobs:
           run: |
             echo HDF5_LIBDIR=/usr/lib/x86_64-linux-gnu/hdf5/mpich >> $GITHUB_ENV
             echo HDF5_INCLUDEDIR=/usr/include/hdf5/mpich >> $GITHUB_ENV
+            echo DYLD_FALLBACK_LIBRARY_PATH="/opt/homebrew/lib:$DYLD_FALLBACK_LIBRARY_PATH" >> $GITHUB_ENV
         - if: steps.cache.outputs.cache-hit != 'true' && startsWith(matrix.platform, 'macos-')
           run: |
             brew install hdf5-mpi && echo HDF5_DIR="$(brew --cellar hdf5-mpi)/$(brew list --versions hdf5-mpi | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+')" >> $GITHUB_ENV
@@ -142,8 +143,6 @@ jobs:
           run: |
             HDF5_MPI="ON" CC=mpicc pip install --no-binary=h5py h5py==3.13.0
             pip install -e .[tests]
-        - if: steps.cache.outputs.cache-hit != 'true' && startsWith(matrix.platform, 'macos-')
-          uses: mxschmitt/action-tmate@v3
         - run: pip show numpy
         - id: cache-save
           if: steps.cache.outputs.cache-hit != 'true'
@@ -151,9 +150,7 @@ jobs:
           with:
             path: ${{ env.pip_user_site }}
             key: ${{ matrix.platform }}-${{ matrix.mpi }}-${{ matrix.python-version }}-${{ env.toml_ci_md5 }}
-        # - if: ${{ failure() }}
-        #   uses: mxschmitt/action-tmate@v3
-         
+      
   tests:
     needs: [zenodo_json, pylint, pdoc, precommit, tests_setup]
     strategy:
@@ -230,9 +227,7 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
           verbose: true
-      - if: ${{ failure() }}
-        uses: mxschmitt/action-tmate@v3
-
+      
   package:
     runs-on: ubuntu-latest
     steps:
