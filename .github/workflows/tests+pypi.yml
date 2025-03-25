@@ -134,7 +134,6 @@ jobs:
           run: |
             echo HDF5_LIBDIR=/usr/lib/x86_64-linux-gnu/hdf5/mpich >> $GITHUB_ENV
             echo HDF5_INCLUDEDIR=/usr/include/hdf5/mpich >> $GITHUB_ENV
-            echo DYLD_FALLBACK_LIBRARY_PATH="/opt/homebrew/lib:$DYLD_FALLBACK_LIBRARY_PATH" >> $GITHUB_ENV
         - if: steps.cache.outputs.cache-hit != 'true' && startsWith(matrix.platform, 'macos-')
           run: |
             brew install hdf5-mpi && echo HDF5_DIR="$(brew --cellar hdf5-mpi)/$(brew list --versions hdf5-mpi | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+')" >> $GITHUB_ENV
@@ -199,7 +198,9 @@ jobs:
       - if: startsWith(matrix.platform, 'ubuntu-')
         run: sudo apt-get update && sudo apt-get install -y libhdf5-mpi$_ch-dev pkg-config
       - if: startsWith(matrix.platform, 'macos-')
-        run: brew install hdf5-mpi && echo HDF5_DIR=/opt/homebrew >> $GITHUB_ENV
+        run: |
+          brew install hdf5-mpi && echo HDF5_DIR=/opt/homebrew >> $GITHUB_ENV
+          export DYLD_FALLBACK_LIBRARY_PATH="/opt/homebrew/lib:$DYLD_FALLBACK_LIBRARY_PATH"
       - run: python -We -c "import PyMPDATA_MPI"
       - if: matrix.mpi == 'openmpi'
         run: echo _mpiexec_args="--oversubscribe" >> $GITHUB_ENV
