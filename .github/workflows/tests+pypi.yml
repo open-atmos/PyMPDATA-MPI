@@ -88,7 +88,7 @@ jobs:
   tests_setup:
     strategy:
       matrix:
-        platform: [macos-15]
+        platform: [macos-15, ubuntu-latest]
         mpi: [ 'mpich', 'openmpi', 'intelmpi']
         python-version: ["3.10","3.12"]
         exclude:
@@ -101,8 +101,8 @@ jobs:
             mpi: intelmpi
 
           # https://github.com/Homebrew/homebrew-core/issues/26974
-          - platform: macos-15
-            mpi: mpich
+          # - platform: macos-15
+          #   mpi: mpich
 
     runs-on: ${{ matrix.platform }}
     steps:
@@ -154,7 +154,7 @@ jobs:
     needs: [zenodo_json, pylint, pdoc, precommit, tests_setup]
     strategy:
       matrix:
-        platform: [macos-15]
+        platform: [macos-15, ubuntu-latest]
         mpi: [ 'mpich', 'openmpi', 'intelmpi']
         python-version: ["3.10","3.12"]
         disable-jit: [1, 0]
@@ -169,8 +169,8 @@ jobs:
             mpi: intelmpi
 
           # https://github.com/Homebrew/homebrew-core/issues/26974
-          - platform: macos-15
-            mpi: mpich
+          # - platform: macos-15
+          #   mpi: mpich
 
       fail-fast: false
 
@@ -200,7 +200,7 @@ jobs:
       - if: startsWith(matrix.platform, 'macos-')
         run: brew install hdf5-mpi && echo HDF5_DIR=/opt/homebrew >> $GITHUB_ENV
       - if: startsWith(matrix.platform, 'macos-')
-        run: echo DYLD_FALLBACK_LIBRARY_PATH=/opt/homebrew/lib:$DYLD_FALLBACK_LIBRARY_PATH >> $GITHUB_ENV
+        run: echo DYLD_FALLBACK_LIBRARY_PATH=/opt/homebrew/lib:/usr/local/lib:/usr/lib:$DYLD_FALLBACK_LIBRARY_PATH >> $GITHUB_ENV
       - run: python -We -c "import PyMPDATA_MPI"
       - if: matrix.mpi == 'openmpi'
         run: echo _mpiexec_args="--oversubscribe" >> $GITHUB_ENV
