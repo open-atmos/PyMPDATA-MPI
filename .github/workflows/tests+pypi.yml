@@ -207,7 +207,7 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y libhdf5-mpi$_ch-dev pkg-config
       - if: startsWith(matrix.platform, 'macos-')
         run: brew install hdf5-mpi && echo HDF5_DIR=/opt/homebrew >> $GITHUB_ENV
-      - if: matrix.platform == "macos-15"
+      - if: matrix.platform == 'macos-15'
         run: echo DYLD_FALLBACK_LIBRARY_PATH=/opt/homebrew/lib:/usr/local/lib:/usr/lib:$DYLD_FALLBACK_LIBRARY_PATH >> $GITHUB_ENV
       - run: python -We -c "import PyMPDATA_MPI"
       - if: matrix.mpi == 'openmpi'
