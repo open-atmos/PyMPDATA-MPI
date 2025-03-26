@@ -101,8 +101,8 @@ jobs:
             mpi: intelmpi
 
           # https://github.com/Homebrew/homebrew-core/issues/26974
-          # - platform: macos-15
-          #   mpi: mpich
+          - platform: macos-15
+            mpi: mpich
 
     runs-on: ${{ matrix.platform }}
     steps:
@@ -228,8 +228,8 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
           verbose: true
-      - if: ${{ failure() }} && matrix.platform == "macos-15"
-        uses: mxschmitt/action-tmate@v3
+      # - if: ${{ failure() }} && matrix.platform == "macos-15"
+      #   uses: mxschmitt/action-tmate@v3
   package:
     runs-on: ubuntu-latest
     steps:
