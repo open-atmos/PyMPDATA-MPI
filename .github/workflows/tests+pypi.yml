@@ -93,7 +93,9 @@ jobs:
         python-version: ["3.10","3.12"]
         exclude:
           # as of time of writing, mpi4py/setup-mpi does not support it
-          - platform: macos-13 || macos-15
+          - platform: macos-13
+            mpi: intelmpi
+          - platform: macos-15
             mpi: intelmpi
 
           # issues with: *** The MPI_Comm_rank() function was called before MPI_INIT was invoked.
@@ -101,12 +103,15 @@ jobs:
             mpi: intelmpi
 
           # https://github.com/Homebrew/homebrew-core/issues/26974
-          - platform: macos-13 || macos-15
+          - platform: macos-13
             mpi: mpich
-
+          - platform: macos-15
+            mpi: mpich
+            
           # HDF5_MPI expects arm architecture with python 3.12 on macos
           - platform: macos-13
             python-version: '3.12'
+            
     runs-on: ${{ matrix.platform }}
     steps:
         - uses: actions/checkout@v2
@@ -164,7 +169,9 @@ jobs:
         mpi-np: [1, 2, 3]
         exclude:
           # as of time of writing, mpi4py/setup-mpi does not support it
-          - platform: macos-13 || macos-15
+          - platform: macos-13
+            mpi: intelmpi
+          - platform: macos-15
             mpi: intelmpi
 
           # issues with: *** The MPI_Comm_rank() function was called before MPI_INIT was invoked.
@@ -172,10 +179,12 @@ jobs:
             mpi: intelmpi
 
           # https://github.com/Homebrew/homebrew-core/issues/26974
-          - platform: macos-13 || macos-15
+          - platform: macos-13
             mpi: mpich
-
-          # HDF5_MPI expects arm architecture with python 3.12 on macos-13, while the github workers are x86_64
+          - platform: macos-15
+            mpi: mpich
+            
+          # HDF5_MPI expects arm architecture with python 3.12 on macos
           - platform: macos-13
             python-version: '3.12'
             
