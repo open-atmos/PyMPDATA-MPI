@@ -1,9 +1,11 @@
 """test for asserting equivalence of results from single node environment and multi-node one"""
 
 import os
-import platform
+
+# import platform
 import shutil
-import sys
+
+# import sys
 from pathlib import Path
 
 import numba
