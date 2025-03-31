@@ -36,6 +36,7 @@ SPHERICAL_OUTPUT_STEPS = range(0, 2000, 100)
 
 @pytest.fixture
 def xfail_selected_intel_macos_params(request):
+    """Function that allows to xfail certain tests on intel-based macos"""
     options_kwargs = request.getfixturevalue("OPTIONS_KWARGS")
     mpi_dim = request.getfixturevalue("mpi_dim")
     scenario = request.getfixturevalue("scenario_class")
