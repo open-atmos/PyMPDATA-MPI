@@ -53,7 +53,7 @@ SPHERICAL_OUTPUT_STEPS = range(0, 2000, 100)
             marks=pytest.mark.xfail(
                 sys.platform == "darwin"
                 and not platform.machine() == "arm64"
-                and mpi.rank == 0,
+                and mpi.rank() == 0,
                 strict=True,
                 reason="TODO #162",
             ),
