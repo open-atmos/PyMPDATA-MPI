@@ -45,20 +45,21 @@ SPHERICAL_OUTPUT_STEPS = range(0, 2000, 100)
 )
 @pytest.mark.parametrize("options_kwargs", OPTIONS_KWARGS)
 @pytest.mark.parametrize("courant_field_multiplier", COURANT_FIELD_MULTIPLIER)
-@pytest.mark.parametrize(
-    "mpi_dim",
-    (
-        pytest.param(
-            INNER,
-            marks=pytest.mark.xfail(
-                sys.platform == "darwin" and not platform.machine() == "arm64",
-                strict=True,
-                reason="TODO #162",
-            ),
-        ),
-        OUTER,
-    ),
-)
+@pytest.mark.parametrize("mpi_dim", (INNER, OUTER))
+# @pytest.mark.parametrize(
+#     "mpi_dim",
+#     (
+#         pytest.param(
+#             INNER,
+#             marks=pytest.mark.xfail(
+#                 sys.platform == "darwin" and not platform.machine() == "arm64",
+#                 strict=True,
+#                 reason="TODO #162",
+#             ),
+#         ),
+#         OUTER,
+#     ),
+# )
 def test_single_vs_multi_node(  # pylint: disable=too-many-arguments,too-many-branches,too-many-statements
     *,
     mpi_dim,
