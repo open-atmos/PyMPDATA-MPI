@@ -34,27 +34,6 @@ CARTESIAN_OUTPUT_STEPS = range(0, 24, 2)
 SPHERICAL_OUTPUT_STEPS = range(0, 2000, 100)
 
 
-@pytest.fixture
-def xfail_selected_intel_macos_params(request):
-    """Function that allows to xfail certain tests on intel-based macos"""
-    options_kwargs = request.getfixturevalue("options_kwargs")
-    mpi_dim = request.getfixturevalue("mpi_dim")
-    scenario = request.getfixturevalue("scenario_class")
-
-    xfail_kwargs_fixtures = [
-        {"n_iters": 2, "nonoscillatory": True},
-        {"n_iters": 3},
-    ]
-    if (
-        sys.platform == "darwin"
-        and not platform.machine() == "arm64"
-        and mpi_dim == INNER
-        and scenario == CartesianScenario
-    ):
-        if options_kwargs in xfail_kwargs_fixtures:
-            request.node.add_marker(pytest.mark.xfail(strict=True, reason="TODO #162"))
-
-
 @pytest.mark.parametrize(
     "scenario_class, output_steps, n_threads",
     (
@@ -66,8 +45,22 @@ def xfail_selected_intel_macos_params(request):
 )
 @pytest.mark.parametrize("options_kwargs", OPTIONS_KWARGS)
 @pytest.mark.parametrize("courant_field_multiplier", COURANT_FIELD_MULTIPLIER)
-@pytest.mark.parametrize("mpi_dim", (INNER, OUTER))
-@pytest.mark.usefixtures("xfail_selected_intel_macos_params")
+@pytest.mark.parametrize(
+    "mpi_dim",
+    (
+        pytest.param(
+            INNER,
+            marks=pytest.mark.xfail(
+                sys.platform == "darwin"
+                and not platform.machine() == "arm64"
+                and mpi.rank == 0,
+                strict=True,
+                reason="TODO #162",
+            ),
+        ),
+        OUTER,
+    ),
+)
 def test_single_vs_multi_node(  # pylint: disable=too-many-arguments,too-many-branches,too-many-statements
     *,
     mpi_dim,
