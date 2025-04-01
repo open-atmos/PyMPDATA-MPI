@@ -77,10 +77,22 @@ def test_single_vs_multi_node(  # pylint: disable=too-many-arguments,too-many-br
         pytest.skip("TODO #56")
 
     if n_threads > 1 and options_kwargs.get("nonoscillatory", False):
+        if (
+            sys.platform == "darwin"
+            and not platform.machine() == "arm64"
+            and numba.config.DISABLE_JIT
+            and mpi.size() > 1
+        ):
+            request.node.add_marker(pytest.mark.xfail(reason="TODO #162", strict=True))
         pytest.skip("TODO #99")
 
     if mpi_dim == INNER and options_kwargs.get("third_order_terms", False):
-        if sys.platform == "darwin" and not platform.machine() == "arm64":
+        if (
+            sys.platform == "darwin"
+            and not platform.machine() == "arm64"
+            and numba.config.DISABLE_JIT
+            and not mpi.size() == 1
+        ):
             request.node.add_marker(pytest.mark.xfail(reason="TODO #162", strict=True))
         else:
             pytest.skip("TODO #102")
