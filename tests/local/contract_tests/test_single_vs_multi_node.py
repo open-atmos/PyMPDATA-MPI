@@ -45,23 +45,7 @@ SPHERICAL_OUTPUT_STEPS = range(0, 2000, 100)
 )
 @pytest.mark.parametrize("options_kwargs", OPTIONS_KWARGS)
 @pytest.mark.parametrize("courant_field_multiplier", COURANT_FIELD_MULTIPLIER)
-@pytest.mark.parametrize(
-    "mpi_dim",
-    (
-        pytest.param(
-            INNER,
-            marks=pytest.mark.xfail(
-                sys.platform == "darwin"
-                and not platform.machine() == "arm64"
-                and mpi.rank() != 0
-                and options_kwargs["third_order_terms"] == True,
-                strict=True,
-                reason="TODO #162",
-            ),
-        ),
-        OUTER,
-    ),
-)
+@pytest.mark.parametrize("mpi_dim", (INNER, OUTER))
 def test_single_vs_multi_node(  # pylint: disable=too-many-arguments,too-many-branches,too-many-statements
     *,
     mpi_dim,
@@ -95,7 +79,10 @@ def test_single_vs_multi_node(  # pylint: disable=too-many-arguments,too-many-br
         pytest.skip("TODO #99")
 
     if mpi_dim == INNER and options_kwargs.get("third_order_terms", False):
-        pytest.skip("TODO #102")
+        if sys.platform == "darwin" and not platform.machine() == "arm64":
+            pytest.xfail("TODO #162")
+        else:
+            pytest.skip("TODO #102")
 
     if n_threads > 1 and numba.config.DISABLE_JIT:  # pylint: disable=no-member
         pytest.skip("threading requires Numba JIT to be enabled")
