@@ -55,7 +55,8 @@ def test_single_vs_multi_node(  # pylint: disable=too-many-arguments,too-many-br
     n_threads,
     courant_field_multiplier,
     output_steps,
-    grid=(64, 32),  # TODO #101
+    grid=(64, 32),
+    request,  # TODO #101
 ):
     """
     Test is divided into three logical stages.
@@ -80,7 +81,7 @@ def test_single_vs_multi_node(  # pylint: disable=too-many-arguments,too-many-br
 
     if mpi_dim == INNER and options_kwargs.get("third_order_terms", False):
         if sys.platform == "darwin" and not platform.machine() == "arm64":
-            pytest.xfail("TODO #162")
+            request.node.add_marker(pytest.mark.xfail(reason="TODO #162", strict=True))
         else:
             pytest.skip("TODO #102")
 
