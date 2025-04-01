@@ -80,7 +80,7 @@ def test_single_vs_multi_node(  # pylint: disable=too-many-arguments,too-many-br
         if (
             sys.platform == "darwin"
             and not platform.machine() == "arm64"
-            and numba.config.DISABLE_JIT
+            and numba.config.DISABLE_JIT  # pylint: disable=no-member
             and mpi.size() > 1
         ):
             request.node.add_marker(pytest.mark.xfail(reason="TODO #162", strict=True))
@@ -90,7 +90,7 @@ def test_single_vs_multi_node(  # pylint: disable=too-many-arguments,too-many-br
         if (
             sys.platform == "darwin"
             and not platform.machine() == "arm64"
-            and numba.config.DISABLE_JIT
+            and numba.config.DISABLE_JIT  # pylint: disable=no-member
             and not mpi.size() == 1
         ):
             request.node.add_marker(pytest.mark.xfail(reason="TODO #162", strict=True))
