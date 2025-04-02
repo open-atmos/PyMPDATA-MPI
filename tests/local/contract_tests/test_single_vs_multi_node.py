@@ -78,6 +78,13 @@ def test_single_vs_multi_node(  # pylint: disable=too-many-arguments,too-many-br
 
     if n_threads > 1 and options_kwargs.get("nonoscillatory", False):
         pytest.skip("TODO #99")
+
+    if mpi_dim == INNER and options_kwargs.get("third_order_terms", False):
+        pytest.skip("TODO #102")
+
+    if n_threads > 1 and numba.config.DISABLE_JIT:  # pylint: disable=no-member
+        pytest.skip("threading requires Numba JIT to be enabled")
+
     # pylint: disable=too-many-boolean-expressions
     if (
         mpi_dim == INNER
@@ -90,12 +97,6 @@ def test_single_vs_multi_node(  # pylint: disable=too-many-arguments,too-many-br
         and numba.config.DISABLE_JIT  # pylint: disable=no-member
     ):
         request.node.add_marker(pytest.mark.xfail(reason="TODO #162", strict=True))
-
-    if mpi_dim == INNER and options_kwargs.get("third_order_terms", False):
-        pytest.skip("TODO #102")
-
-    if n_threads > 1 and numba.config.DISABLE_JIT:  # pylint: disable=no-member
-        pytest.skip("threading requires Numba JIT to be enabled")
 
     plot = (
         "CI_PLOTS_PATH" in os.environ
