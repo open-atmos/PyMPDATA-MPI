@@ -92,7 +92,8 @@ def test_single_vs_multi_node(  # pylint: disable=too-many-arguments,too-many-br
         and not platform.machine() == "arm64"
         and options_kwargs.get("nonoscillatory", False)
         and not numba.config.DISABLE_JIT  # pylint: disable=no-member
-        and n_threads > 1
+        and mpi.size() > 1
+        and n_threads == 1
     ):
         request.node.add_marker(pytest.mark.xfail(reason="TODO #162", strict=True))
 
