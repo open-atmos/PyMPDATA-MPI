@@ -94,7 +94,7 @@ def test_single_vs_multi_node(  # pylint: disable=too-many-arguments,too-many-br
         )
         and sys.platform == "darwin"
         and not platform.machine() == "arm64"
-        and numba.config.DISABLE_JIT  # pylint: disable=no-member
+        and not numba.config.DISABLE_JIT  # pylint: disable=no-member
     ):
         request.node.add_marker(pytest.mark.xfail(reason="TODO #162", strict=True))
 
