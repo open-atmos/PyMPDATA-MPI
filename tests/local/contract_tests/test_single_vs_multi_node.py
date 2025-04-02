@@ -88,13 +88,11 @@ def test_single_vs_multi_node(  # pylint: disable=too-many-arguments,too-many-br
     # pylint: disable=too-many-boolean-expressions
     if (
         mpi_dim == INNER
-        and (
-            options_kwargs.get("nonoscillatory", True)
-            or options_kwargs.get("third_order_terms", True)
-        )
         and sys.platform == "darwin"
         and not platform.machine() == "arm64"
+        and options_kwargs.get("nonoscillatory", False)
         and not numba.config.DISABLE_JIT  # pylint: disable=no-member
+        and n_threads > 1
     ):
         request.node.add_marker(pytest.mark.xfail(reason="TODO #162", strict=True))
 
