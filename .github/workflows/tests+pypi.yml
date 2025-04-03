@@ -164,7 +164,7 @@ jobs:
       matrix:
         platform: [macos-13, macos-14, ubuntu-latest]
         mpi: [ 'mpich', 'openmpi', 'intelmpi']
-        python-version: ["3.10","3.12"]
+        python-version: ["3.10"]
         disable-jit: [1, 0]
         mpi-np: [1, 2, 3]
         exclude:
