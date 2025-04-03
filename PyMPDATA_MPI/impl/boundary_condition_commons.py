@@ -80,7 +80,7 @@ def make_vector_boundary_condition(
 
 def _make_send_recv(set_value, jit_flags, fill_buf, dtype, get_peer, mpi_dim):
 
-    assert MPI.Query_threads == MPI.THREAD_MULTIPLE
+    assert MPI.Query_thread() == MPI.THREAD_MULTIPLE
 
     @numba.njit(**jit_flags)
     def get_buffer_chunk(buffer, i_rng, k_rng, chunk_index):
