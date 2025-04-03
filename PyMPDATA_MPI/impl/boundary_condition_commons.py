@@ -3,6 +3,7 @@
 
 from functools import lru_cache
 
+import mpi4py as MPI
 import numba
 import numba_mpi as mpi
 from PyMPDATA.impl.enumerations import INVALID_INDEX, OUTER
