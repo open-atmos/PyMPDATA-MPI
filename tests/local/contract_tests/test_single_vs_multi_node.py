@@ -56,7 +56,7 @@ def test_single_vs_multi_node(  # pylint: disable=too-many-arguments,too-many-br
     courant_field_multiplier,
     output_steps,
     grid=(64, 32),
-    request,  # TODO #101
+    request,  # TODO #101  # pylint: disable=unused-argument
 ):
     """
     Test is divided into three logical stages.
@@ -96,7 +96,8 @@ def test_single_vs_multi_node(  # pylint: disable=too-many-arguments,too-many-br
         and n_threads == 1
         and mpi.rank() != 0
     ):
-        request.node.add_marker(pytest.mark.xfail(reason="TODO #162", strict=True))
+        pass
+        #request.node.add_marker(pytest.mark.xfail(reason="TODO #162", strict=True))
 
     plot = (
         "CI_PLOTS_PATH" in os.environ
