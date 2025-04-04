@@ -97,7 +97,7 @@ def test_single_vs_multi_node(  # pylint: disable=too-many-arguments,too-many-br
         and mpi.rank() != 0
     ):
         pass
-        #request.node.add_marker(pytest.mark.xfail(reason="TODO #162", strict=True))
+        # request.node.add_marker(pytest.mark.xfail(reason="TODO #162", strict=True))
 
     plot = (
         "CI_PLOTS_PATH" in os.environ
