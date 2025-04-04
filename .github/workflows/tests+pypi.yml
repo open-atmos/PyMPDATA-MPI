@@ -316,7 +316,7 @@ jobs:
           merge-multiple: true
           path: plots
       - run: |
-          sudo apt install -y librsvg2-bin
+          sudo apt install -y librsvg2-bin graphicsmagick-imagemagick-compat
           for scenario in ./plots/${{ env.animation_run }}/*; do
               for test_plots in $scenario/*; do
                   if [ ! $(find "$test_plots" -maxdepth 0 -empty | wc -l) -eq 1 ]; then
