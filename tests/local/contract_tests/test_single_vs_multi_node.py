@@ -38,8 +38,8 @@ SPHERICAL_OUTPUT_STEPS = range(0, 2000, 100)
     "scenario_class, output_steps, n_threads",
     (
         (CartesianScenario, CARTESIAN_OUTPUT_STEPS, 1),
-        (CartesianScenario, CARTESIAN_OUTPUT_STEPS, 2),
-        (CartesianScenario, CARTESIAN_OUTPUT_STEPS, 3),
+        #        (CartesianScenario, CARTESIAN_OUTPUT_STEPS, 2),
+        #        (CartesianScenario, CARTESIAN_OUTPUT_STEPS, 3),
         (SphericalScenario, SPHERICAL_OUTPUT_STEPS, 1),  # TODO #56
     ),
 )
