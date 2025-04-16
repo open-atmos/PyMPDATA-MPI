@@ -1,8 +1,7 @@
 """ Shallow water equations solver example """
 
 import numba
-import numpy as np
-import modelrunner 
+import numpy as np 
 from matplotlib import pyplot
 from PyMPDATA import ScalarField, Stepper, VectorField, Solver
 from PyMPDATA.boundary_conditions import Periodic
@@ -45,13 +44,13 @@ class ShallowWaterScenario(_Scenario):
  
         xyi = mpi_indices(grid=grid, rank=rank, size=size, mpi_dim=mpi_dim)
         nx, ny = xyi[mpi_dim].shape
-
+        print(nx, ny)
         for dim in range(len(grid)):
             xyi[dim] -= (grid[dim] - 1) / 2
 
         self.dt = 0.1
-        self.dx = 20 / grid[0]
-        self.dy = 20 / grid[1]
+        self.dx = 32 / grid[0]
+        self.dy = 32 / grid[1]
         self.eps = 1e-7
         self.lx0 = 2
         self.ly0 = 1
@@ -120,20 +119,21 @@ class ShallowWaterScenario(_Scenario):
     def __getitem__(self, key):
         return self.solvers[key].advectee.get()
 
+    def data(self, key):
+        return self.solvers[key].advectee.data
+
     def _solver_advance(self, n_steps): 
         grid_step = (self.dx, self.dy)
         idx = ((slice(1, -1), slice(None, None)), (slice(None, None), slice(1, -1)))
-        mask = np.zeros(np.shape(self["h"]))
-        vel = np.zeros(np.shape(self["h"]))
         for _ in range(n_steps):
             for xy, k in enumerate(("uh", "vh")):
-                mask = self["h"] > self.eps
+                mask = self.data("h") > self.eps
                 vel = np.where(mask, np.nan, 0)
-                np.divide(self.solvers[k].advectee.get(), self["h"], where=mask, out=vel)
+                #fill_halos
+                np.divide(self.data(k), self.data("h"), where=mask, out=vel)
                 self.advector.get_component(xy)[idx[xy]] = (
                     self.interpolate(vel, xy) * self.dt / grid_step[xy]
                 )
-                self.solvers["h"].advector._fill_halos(self.traversals)
                 self.solvers["h"].advance(1)
             assert self["h"].ctypes.data == self.solvers["h"].advectee.get().ctypes.data
             for xy, k in enumerate(("uh", "vh")):
