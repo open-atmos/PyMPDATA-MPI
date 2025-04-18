@@ -17,6 +17,18 @@ from scenarios._scenario import _Scenario
 
 subdomain = make_subdomain(jit_flags={})
 
+def gradient(psi, grid_step, axis, halo):
+    grad_left = (
+        (slice(halo + 1, None if halo==1 else (-halo+1)), slice(halo,-halo)),
+        (slice(halo,-halo), slice(halo+1,None if halo==1 else (-halo+1)))
+    )
+    grad_right = (
+        (slice(None if halo==1 else (halo-1),-halo-1), slice(halo,-halo)),
+        (slice(halo,-halo), slice(None if halo==1 else (halo-1), -halo-1))
+    )
+    return (psi[grad_left[axis]]-psi[grad_right[axis]])/2/grid_step
+
+
 class ShallowWaterScenario(_Scenario):
     """MPDATA-based shallow-water equations solver discussed and bencharked against analytical solutions in [Jarecka_et_al_2015](https://doi.org/10.1016/j.jcp.2015.02.003)."""
 
@@ -40,8 +52,9 @@ class ShallowWaterScenario(_Scenario):
             return np.where(h > 0, h, 0)
 
         # pylint: disable=too-many-locals, invalid-name
-        halo = mpdata_options.n_halo
- 
+        self.halo = mpdata_options.n_halo
+        self.n_threads=n_threads
+        
         xyi = mpi_indices(grid=grid, rank=rank, size=size, mpi_dim=mpi_dim)
         nx, ny = xyi[mpi_dim].shape
         print(nx, ny)
@@ -96,7 +109,7 @@ class ShallowWaterScenario(_Scenario):
             left_first=tuple([rank % 2 == 0] * 2),
             # TODO #70 (see also https://github.com/open-atmos/PyMPDATA/issues/386)
             buffer_size=(
-                (ny if mpi_dim == OUTER else nx + 2 * halo) * halo
+                (ny if mpi_dim == OUTER else nx + 2 * self.halo) * self.halo
             )  # TODO #38 support for 3D domain
             * 2  # for temporary send/recv buffer on one side
             * 2  # for complex dtype
@@ -124,22 +137,22 @@ class ShallowWaterScenario(_Scenario):
 
     def _solver_advance(self, n_steps): 
         grid_step = (self.dx, self.dy)
-        idx = ((slice(1, -1), slice(None, None)), (slice(None, None), slice(1, -1)))
         for _ in range(n_steps):
+            self.solvers["h"].advectee._debug_fill_halos(self.traversals, range(self.n_threads))
             for xy, k in enumerate(("uh", "vh")):
                 mask = self.data("h") > self.eps
                 vel = np.where(mask, np.nan, 0)
-                #fill_halos
+                self.solvers[k].advectee._debug_fill_halos(self.traversals, range(self.n_threads))
                 np.divide(self.data(k), self.data("h"), where=mask, out=vel)
-                self.advector.get_component(xy)[idx[xy]] = (
+                self.advector.data[xy][:] = (
                     self.interpolate(vel, xy) * self.dt / grid_step[xy]
                 )
-                self.solvers["h"].advance(1)
-            assert self["h"].ctypes.data == self.solvers["h"].advectee.get().ctypes.data
+            self.solvers["h"].advance(1)
+            self.solvers["h"].advectee._debug_fill_halos(self.traversals, range(self.n_threads))
             for xy, k in enumerate(("uh", "vh")):
-                self[k][:] -= self.dt / 2 * self["h"] * np.gradient(self["h"], grid_step[xy], axis=xy)
+                self[k][:] -= self.dt / 2 * self["h"] * gradient(self.data("h"), grid_step[xy], axis=xy, halo=self.halo)
                 self.solvers[k].advance(1)
-                self[k][:] -= self.dt / 2 * self["h"] * np.gradient(self["h"], grid_step[xy], axis=xy)
+                self[k][:] -= self.dt / 2 * self["h"] * gradient(self.data("h"), grid_step[xy], axis=xy, halo=self.halo)
         return -1
 
     @staticmethod
