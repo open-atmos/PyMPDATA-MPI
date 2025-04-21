@@ -5,7 +5,7 @@
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
-from PyMPDATA import ScalarField, Stepper, VectorField, Solver
+from PyMPDATA import ScalarField, Solver, Stepper, VectorField
 
 from PyMPDATA_MPI.domain_decomposition import mpi_indices
 from PyMPDATA_MPI.mpi_periodic import MPIPeriodic
@@ -188,9 +188,11 @@ class SphericalScenario(_Scenario):
         )
         super().__init__(
             mpi_dim=mpi_dim,
-            solver=Solver(stepper=stepper, advectee=advectee, advector=advector, g_factor=g_factor)
+            solver=Solver(
+                stepper=stepper, advectee=advectee, advector=advector, g_factor=g_factor
+            ),
         )
-        
+
     def quick_look(self, state, _):
         """plots the passed advectee field in spherical geometry"""
         # pylint: disable=invalid-name

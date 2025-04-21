@@ -1,32 +1,33 @@
-""" Shallow water equations solver example """
+"""Shallow water equations solver example"""
 
 import numba
-import numpy as np 
+import numpy as np
 from matplotlib import pyplot
-from PyMPDATA import ScalarField, Stepper, VectorField, Solver
+from mpi4py import MPI
+from PyMPDATA import ScalarField, Solver, Stepper, VectorField
 from PyMPDATA.boundary_conditions import Periodic
 from PyMPDATA.impl.domain_decomposition import make_subdomain
-from PyMPDATA.impl.traversals import Traversals
-from PyMPDATA.impl.enumerations import INNER, OUTER, MAX_DIM_NUM
-from mpi4py import MPI
-
+from PyMPDATA.impl.enumerations import INNER, MAX_DIM_NUM, OUTER
 from PyMPDATA.impl.meta import META_HALO_VALID
+from PyMPDATA.impl.traversals import Traversals
+
 from PyMPDATA_MPI.domain_decomposition import mpi_indices
 from PyMPDATA_MPI.mpi_periodic import MPIPeriodic
 from scenarios._scenario import _Scenario
 
 subdomain = make_subdomain(jit_flags={})
 
+
 def gradient(psi, grid_step, axis, halo):
     grad_left = (
-        (slice(halo + 1, None if halo==1 else (-halo+1)), slice(halo,-halo)),
-        (slice(halo,-halo), slice(halo+1,None if halo==1 else (-halo+1)))
+        (slice(halo + 1, None if halo == 1 else (-halo + 1)), slice(halo, -halo)),
+        (slice(halo, -halo), slice(halo + 1, None if halo == 1 else (-halo + 1))),
     )
     grad_right = (
-        (slice(None if halo==1 else (halo-1),-halo-1), slice(halo,-halo)),
-        (slice(halo,-halo), slice(None if halo==1 else (halo-1), -halo-1))
+        (slice(None if halo == 1 else (halo - 1), -halo - 1), slice(halo, -halo)),
+        (slice(halo, -halo), slice(None if halo == 1 else (halo - 1), -halo - 1)),
     )
-    return (psi[grad_left[axis]]-psi[grad_right[axis]])/2/grid_step
+    return (psi[grad_left[axis]] - psi[grad_right[axis]]) / 2 / grid_step
 
 
 class ShallowWaterScenario(_Scenario):
@@ -53,8 +54,8 @@ class ShallowWaterScenario(_Scenario):
 
         # pylint: disable=too-many-locals, invalid-name
         self.halo = mpdata_options.n_halo
-        self.n_threads=n_threads
-        
+        self.n_threads = n_threads
+
         xyi = mpi_indices(grid=grid, rank=rank, size=size, mpi_dim=mpi_dim)
         nx, ny = xyi[mpi_dim].shape
         print(nx, ny)
@@ -120,7 +121,7 @@ class ShallowWaterScenario(_Scenario):
         self.solvers = {
             k: Solver(stepper, v, self.advector) for k, v in advectees.items()
         }
-        
+
     @staticmethod
     def interpolate(psi, axis):
         idx = (
@@ -135,24 +136,40 @@ class ShallowWaterScenario(_Scenario):
     def data(self, key):
         return self.solvers[key].advectee.data
 
-    def _solver_advance(self, n_steps): 
+    def _solver_advance(self, n_steps):
         grid_step = (self.dx, self.dy)
         for _ in range(n_steps):
-            self.solvers["h"].advectee._debug_fill_halos(self.traversals, range(self.n_threads))
+            self.solvers["h"].advectee._debug_fill_halos(
+                self.traversals, range(self.n_threads)
+            )
             for xy, k in enumerate(("uh", "vh")):
                 mask = self.data("h") > self.eps
                 vel = np.where(mask, np.nan, 0)
-                self.solvers[k].advectee._debug_fill_halos(self.traversals, range(self.n_threads))
+                self.solvers[k].advectee._debug_fill_halos(
+                    self.traversals, range(self.n_threads)
+                )
                 np.divide(self.data(k), self.data("h"), where=mask, out=vel)
                 self.advector.data[xy][:] = (
                     self.interpolate(vel, xy) * self.dt / grid_step[xy]
                 )
             self.solvers["h"].advance(1)
-            self.solvers["h"].advectee._debug_fill_halos(self.traversals, range(self.n_threads))
+            self.solvers["h"].advectee._debug_fill_halos(
+                self.traversals, range(self.n_threads)
+            )
             for xy, k in enumerate(("uh", "vh")):
-                self[k][:] -= self.dt / 2 * self["h"] * gradient(self.data("h"), grid_step[xy], axis=xy, halo=self.halo)
+                self[k][:] -= (
+                    self.dt
+                    / 2
+                    * self["h"]
+                    * gradient(self.data("h"), grid_step[xy], axis=xy, halo=self.halo)
+                )
                 self.solvers[k].advance(1)
-                self[k][:] -= self.dt / 2 * self["h"] * gradient(self.data("h"), grid_step[xy], axis=xy, halo=self.halo)
+                self[k][:] -= (
+                    self.dt
+                    / 2
+                    * self["h"]
+                    * gradient(self.data("h"), grid_step[xy], axis=xy, halo=self.halo)
+                )
         return -1
 
     @staticmethod
