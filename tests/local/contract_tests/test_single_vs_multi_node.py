@@ -22,9 +22,9 @@ from scenarios import CartesianScenario, SphericalScenario, ShallowWaterScenario
 
 OPTIONS_KWARGS = (
     {"n_iters": 1},
-    #{"n_iters": 2, "third_order_terms": True},
+    {"n_iters": 2, "third_order_terms": True},
     {"n_iters": 2, "nonoscillatory": True, "infinite_gauge": True},
-    #{"n_iters": 3},
+    {"n_iters": 3},
 )
 
 COURANT_FIELD_MULTIPLIER = ((0.5, 0.25), (-0.5, 0.25), (0.5, -0.25), (-0.5, -0.25))
@@ -88,6 +88,8 @@ def test_single_vs_multi_node(  # pylint: disable=too-many-arguments,too-many-br
     if n_threads > 1 and numba.config.DISABLE_JIT:  # pylint: disable=no-member
         pytest.skip("threading requires Numba JIT to be enabled")
 
+    if scenario_class is ShallowWaterScenario and (option_kwargs["n_iters"] == 3 or option_kwargs.get("third_order_terms", False)):
+        pytest.skip()
     # pylint: disable=too-many-boolean-expressions
     if (
         mpi_dim == INNER
