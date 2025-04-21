@@ -18,7 +18,7 @@ from PyMPDATA.impl.enumerations import INNER, OUTER
 from PyMPDATA_MPI.domain_decomposition import subdomain
 from PyMPDATA_MPI.hdf_storage import HDFStorage
 from PyMPDATA_MPI.utils import barrier_enclosed, setup_dataset_and_sync_all_workers
-from scenarios import CartesianScenario, SphericalScenario, ShallowWaterScenario
+from scenarios import CartesianScenario, ShallowWaterScenario, SphericalScenario
 
 OPTIONS_KWARGS = (
     {"n_iters": 1},
@@ -88,7 +88,9 @@ def test_single_vs_multi_node(  # pylint: disable=too-many-arguments,too-many-br
     if n_threads > 1 and numba.config.DISABLE_JIT:  # pylint: disable=no-member
         pytest.skip("threading requires Numba JIT to be enabled")
 
-    if scenario_class is ShallowWaterScenario and (option_kwargs["n_iters"] == 3 or option_kwargs.get("third_order_terms", False)):
+    if scenario_class is ShallowWaterScenario and (
+        options_kwargs["n_iters"] == 3 or options_kwargs.get("third_order_terms", False)
+    ):
         pytest.skip()
     # pylint: disable=too-many-boolean-expressions
     if (
