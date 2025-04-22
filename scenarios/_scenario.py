@@ -1,6 +1,5 @@
 """Provides base _Scenario base class that every scenario should inherit"""
 
-from PyMPDATA import Solver
 from PyMPDATA.impl.enumerations import INNER, OUTER
 
 
@@ -8,10 +7,10 @@ class _Scenario:  # pylint: disable=too-few-public-methods
     """Base class for every Scenario. Provides logic for advance() function"""
 
     # pylint: disable=too-many-arguments
-    def __init__(self, *, mpi_dim,solver=None):
+    def __init__(self, *, mpi_dim, solver=None):
         self.mpi_dim = mpi_dim
-        self.solvers = {'psi': solver} 
-        
+        self.solvers = {"psi": solver}
+
     def advance(self, dataset, output_steps, mpi_range):
         """Logic for performing simulation. Returns wall time of one timestep (in clock ticks)"""
         steps_done = 0
@@ -31,11 +30,11 @@ class _Scenario:  # pylint: disable=too-few-public-methods
                         slice(index, index + 1),
                     )
                 ] = data.reshape((data.shape[0], data.shape[1], 1))
-                break #TODO: add logic to seperatly read multp. advectees
+                break  # TODO: add logic to seperatly read multp. advectees
         return wall_time
 
-    def _solver_advance(self,n_steps):
+    def _solver_advance(self, n_steps):
         return self.solvers["psi"].advance(n_steps=n_steps)
-        
+
     def __getitem__(self, _):
         return self.solvers["psi"].advectee.get()

@@ -1,38 +1,39 @@
-""" Shallow water equations solver example """
+"""Shallow water equations solver example"""
 
 import numba
-import numpy as np 
+import numpy as np
 from matplotlib import pyplot
-from PyMPDATA import ScalarField, Stepper, VectorField, Solver
+from PyMPDATA import ScalarField, Solver, Stepper, VectorField
 from PyMPDATA.boundary_conditions import Periodic
 from PyMPDATA.impl.domain_decomposition import make_subdomain
-from PyMPDATA.impl.traversals import Traversals
-from PyMPDATA.impl.enumerations import INNER, OUTER, MAX_DIM_NUM
-from mpi4py import MPI
+from PyMPDATA.impl.enumerations import INNER, OUTER
 
-from PyMPDATA.impl.meta import META_HALO_VALID
 from PyMPDATA_MPI.domain_decomposition import mpi_indices
 from PyMPDATA_MPI.mpi_periodic import MPIPeriodic
 from scenarios._scenario import _Scenario
 
 subdomain = make_subdomain(jit_flags={})
 
+
 def gradient(psi, grid_step, axis, halo):
+    """Helper function needed to calculate gradients"""
     grad_left = (
-        (slice(halo + 1, None if halo==1 else (-halo+1)), slice(halo,-halo)),
-        (slice(halo,-halo), slice(halo+1,None if halo==1 else (-halo+1)))
+        (slice(halo + 1, None if halo == 1 else (-halo + 1)), slice(halo, -halo)),
+        (slice(halo, -halo), slice(halo + 1, None if halo == 1 else (-halo + 1))),
     )
     grad_right = (
-        (slice(None if halo==1 else (halo-1),-halo-1), slice(halo,-halo)),
-        (slice(halo,-halo), slice(None if halo==1 else (halo-1), -halo-1))
+        (slice(None if halo == 1 else (halo - 1), -halo - 1), slice(halo, -halo)),
+        (slice(halo, -halo), slice(None if halo == 1 else (halo - 1), -halo - 1)),
     )
-    return (psi[grad_left[axis]]-psi[grad_right[axis]])/2/grid_step
+    return (psi[grad_left[axis]] - psi[grad_right[axis]]) / 2 / grid_step
 
 
 class ShallowWaterScenario(_Scenario):
-    """MPDATA-based shallow-water equations solver discussed and bencharked against analytical solutions in [Jarecka_et_al_2015](https://doi.org/10.1016/j.jcp.2015.02.003)."""
+    # pylint: disable=too-many-instance-attributes, too-many-locals
+    """class represenation of shallow water equation solver based on
+    [Jarecka_et_al_2015](https://doi.org/10.1016/j.jcp.2015.02.003)."""
 
-    def __init__(  # pylint: disable=too-many-arguments
+    def __init__(  # pylint: disable=too-many-arguments,too-many-locals
         self,
         *,
         mpdata_options,
@@ -40,7 +41,7 @@ class ShallowWaterScenario(_Scenario):
         grid,
         rank,
         size,
-        courant_field_multiplier,
+        courant_field_multiplier,  # pylint: disable=unused-argument
         mpi_dim,
     ):
         @staticmethod
@@ -51,14 +52,14 @@ class ShallowWaterScenario(_Scenario):
             h = A * (1 - (x / lx) ** 2 - (y / ly) ** 2)
             return np.where(h > 0, h, 0)
 
-        # pylint: disable=too-many-locals, invalid-name
+        # pylint: disable=invalid-name
         self.halo = mpdata_options.n_halo
-        self.n_threads=n_threads
-        
+        self.n_threads = n_threads
+
         xyi = mpi_indices(grid=grid, rank=rank, size=size, mpi_dim=mpi_dim)
         nx, ny = xyi[mpi_dim].shape
         print(nx, ny)
-        for dim in range(len(grid)):
+        for dim in enumerate(grid):
             xyi[dim] -= (grid[dim] - 1) / 2
 
         self.dt = 0.1
@@ -68,6 +69,7 @@ class ShallowWaterScenario(_Scenario):
         self.lx0 = 2
         self.ly0 = 1
 
+        # pylint: disable=duplicate-code
         mpi_periodic = MPIPeriodic(size=size, mpi_dim=mpi_dim)
         periodic = Periodic()
         boundary_conditions = (
@@ -101,7 +103,7 @@ class ShallowWaterScenario(_Scenario):
                 boundary_conditions=boundary_conditions,
             ),
         }
-
+        # pylint: disable=duplicate-code
         stepper = Stepper(
             options=mpdata_options,
             n_dims=2,
@@ -120,9 +122,10 @@ class ShallowWaterScenario(_Scenario):
         self.solvers = {
             k: Solver(stepper, v, self.advector) for k, v in advectees.items()
         }
-        
+
     @staticmethod
     def interpolate(psi, axis):
+        """Method that does simple interpolation of given field"""
         idx = (
             (slice(None, -1), slice(None, None)),
             (slice(None, None), slice(None, -1)),
@@ -133,32 +136,49 @@ class ShallowWaterScenario(_Scenario):
         return self.solvers[key].advectee.get()
 
     def data(self, key):
+        """Method used to get raw data from advectee"""
         return self.solvers[key].advectee.data
 
-    def _solver_advance(self, n_steps): 
+    def _solver_advance(self, n_steps):
         grid_step = (self.dx, self.dy)
         for _ in range(n_steps):
-            self.solvers["h"].advectee._debug_fill_halos(self.traversals, range(self.n_threads))
+            self.solvers[  # pylint: disable=protected-access
+                "h"
+            ].advectee._debug_fill_halos(self.traversals, range(self.n_threads))
             for xy, k in enumerate(("uh", "vh")):
                 mask = self.data("h") > self.eps
                 vel = np.where(mask, np.nan, 0)
-                self.solvers[k].advectee._debug_fill_halos(self.traversals, range(self.n_threads))
+                self.solvers[  # pylint: disable=protected-access
+                    k
+                ].advectee._debug_fill_halos(self.traversals, range(self.n_threads))
                 np.divide(self.data(k), self.data("h"), where=mask, out=vel)
                 self.advector.data[xy][:] = (
                     self.interpolate(vel, xy) * self.dt / grid_step[xy]
                 )
             self.solvers["h"].advance(1)
-            self.solvers["h"].advectee._debug_fill_halos(self.traversals, range(self.n_threads))
+            self.solvers[  # pylint: disable=protected-access
+                "h"
+            ].advectee._debug_fill_halos(self.traversals, range(self.n_threads))
             for xy, k in enumerate(("uh", "vh")):
-                self[k][:] -= self.dt / 2 * self["h"] * gradient(self.data("h"), grid_step[xy], axis=xy, halo=self.halo)
+                self[k][:] -= (
+                    self.dt
+                    / 2
+                    * self["h"]
+                    * gradient(self.data("h"), grid_step[xy], axis=xy, halo=self.halo)
+                )
                 self.solvers[k].advance(1)
-                self[k][:] -= self.dt / 2 * self["h"] * gradient(self.data("h"), grid_step[xy], axis=xy, halo=self.halo)
+                self[k][:] -= (
+                    self.dt
+                    / 2
+                    * self["h"]
+                    * gradient(self.data("h"), grid_step[xy], axis=xy, halo=self.halo)
+                )
         return -1
 
     @staticmethod
     def quick_look(psi, n_threads, zlim=(-1, 1), norm=None):
         """plots the passed advectee field"""
-        # pylint: disable=invalid-name,too-many-locals
+        # pylint: disable=invalid-name,too-many-locals,duplicate-code
         xi, yi = np.indices(psi.shape)
         _, ax = pyplot.subplots(subplot_kw={"projection": "3d"})
         pyplot.gca().plot_wireframe(xi + 0.5, yi + 0.5, psi, color="red", linewidth=0.5)
