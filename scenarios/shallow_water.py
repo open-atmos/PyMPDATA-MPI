@@ -58,9 +58,8 @@ class ShallowWaterScenario(_Scenario):
 
         xyi = mpi_indices(grid=grid, rank=rank, size=size, mpi_dim=mpi_dim)
         nx, ny = xyi[mpi_dim].shape
-        print(nx, ny)
         for dim in enumerate(grid):
-            xyi[dim] -= (grid[dim] - 1) / 2
+            xyi[dim[0]] -= (grid[dim[0]] - 1) / 2
 
         self.dt = 0.1
         self.dx = 32 / grid[0]
