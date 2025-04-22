@@ -71,6 +71,7 @@ class CartesianScenario(_Scenario):
             * (2 if mpi_dim == OUTER else n_threads),
         )
         solver = Solver(stepper=stepper, advectee=advectee, advector=advector)
+
         super().__init__(mpi_dim=mpi_dim, solver=solver)
 
     @staticmethod

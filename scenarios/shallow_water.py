@@ -142,15 +142,15 @@ class ShallowWaterScenario(_Scenario):
     def _solver_advance(self, n_steps):
         grid_step = (self.dx, self.dy)
         for _ in range(n_steps):
-            self.solvers[  # pylint: disable=protected-access
-                "h"
-            ].advectee._debug_fill_halos(self.traversals, range(self.n_threads))
+            self.solvers["h"].advectee._debug_fill_halos(
+                self.traversals, range(self.n_threads)
+            )
             for xy, k in enumerate(("uh", "vh")):
                 mask = self.data("h") > self.eps
                 vel = np.where(mask, np.nan, 0)
-                self.solvers[  # pylint: disable=protected-access
-                    k
-                ].advectee._debug_fill_halos(self.traversals, range(self.n_threads))
+                self.solvers[k].advectee._debug_fill_halos(
+                    self.traversals, range(self.n_threads)
+                )
                 np.divide(self.data(k), self.data("h"), where=mask, out=vel)
                 self.advector.data[xy][:] = (
                     self.interpolate(vel, xy) * self.dt / grid_step[xy]
