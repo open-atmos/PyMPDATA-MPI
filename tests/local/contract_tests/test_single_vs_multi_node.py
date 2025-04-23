@@ -110,7 +110,9 @@ def test_single_vs_multi_node(  # pylint: disable=too-many-arguments,too-many-br
         "CI_PLOTS_PATH" in os.environ
         and courant_field_multiplier == COURANT_FIELD_MULTIPLIER[0]
         and (
-            options_kwargs == OPTIONS_KWARGS[-1] or scenario_class is SphericalScenario
+            options_kwargs == OPTIONS_KWARGS[-1]
+            or scenario_class is SphericalScenario
+            or scenario_class is ShallowWaterScenario
         )
     )
     # arrange
