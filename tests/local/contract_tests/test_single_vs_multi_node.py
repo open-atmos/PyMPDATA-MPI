@@ -153,13 +153,16 @@ def test_single_vs_multi_node(  # pylint: disable=too-many-arguments,too-many-br
     for mpi_max_size, path in paths.items():
         truncated_size = min(mpi_max_size, mpi.size())
         rank = mpi.rank()
-
         courant_str = (
-            str(courant_field_multiplier)
-            .replace(" ", "")
-            .replace(",", ".")
-            .replace("(", ".")
-            .replace(")", ".")
+            (
+                str(courant_field_multiplier)
+                .replace(" ", "")
+                .replace(",", ".")
+                .replace("(", ".")
+                .replace(")", ".")
+            )
+            if courant_field_multiplier is not None
+            else "None"
         )
 
         plot_path = None
