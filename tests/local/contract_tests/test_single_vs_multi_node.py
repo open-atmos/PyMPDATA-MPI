@@ -27,7 +27,13 @@ OPTIONS_KWARGS = (
     {"n_iters": 3},
 )
 
-COURANT_FIELD_MULTIPLIER = ((0.5, 0.25), (-0.5, 0.25), (0.5, -0.25), (-0.5, -0.25))
+COURANT_FIELD_MULTIPLIER = (
+    (0.5, 0.25),
+    (-0.5, 0.25),
+    (0.5, -0.25),
+    (-0.5, -0.25),
+    None,
+)
 
 CARTESIAN_OUTPUT_STEPS = range(0, 24, 2)
 
@@ -70,6 +76,14 @@ def test_single_vs_multi_node(  # pylint: disable=too-many-arguments,too-many-br
     (which is simulation performed on single node environment)
     """
     # pylint: disable=too-many-locals
+    if scenario_class is not ShallowWaterScenario and courant_field_multiplier is None:
+        pytest.skip(
+            '"None" courant field multiplier is tested for ShallowWaterScenario only'
+        )
+
+    if scenario_class is ShallowWaterScenario and courant_field_multiplier is not None:
+        pytest.skip("Courant field multiplier is not used in ShallowWaterScenario")
+
     if scenario_class is SphericalScenario and options_kwargs["n_iters"] > 1:
         pytest.skip("TODO #56")
 
