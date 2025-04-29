@@ -161,8 +161,6 @@ jobs:
           with:
             path: ${{ env.pip_user_site }}
             key: ${{ matrix.platform }}-${{ matrix.mpi }}-${{ matrix.python-version }}-${{ env.toml_ci_md5 }}
-        - if: ${{ failure() }} && matrix.platform == "macos-14"
-          uses: mxschmitt/action-tmate@v3
         
   tests:
     needs: [zenodo_json, pylint, pdoc, precommit, tests_setup]
